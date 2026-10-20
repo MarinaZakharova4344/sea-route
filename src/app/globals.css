@@ -30,6 +30,8 @@ body {
 /* ---------- Страница входа ---------- */
 
 .login {
+  /* Тёмная схема для встроенных элементов браузера (значок ключа автозаполнения, выпадающие списки) */
+  color-scheme: dark;
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
@@ -249,6 +251,7 @@ body {
 }
 
 .input {
+  color-scheme: dark;
   width: 100%;
   height: 50px;
   padding: 0 16px;
@@ -270,6 +273,26 @@ body {
   border-color: var(--accent);
   background: rgba(255, 255, 255, 0.09);
   box-shadow: 0 0 0 3px rgba(74, 163, 223, 0.28);
+}
+
+/* Автозаполнение браузера (Chrome, Яндекс) красит поле в светло-голубой: возвращаем тёмный вид,
+   иначе белый текст и кнопка «Показать» сливаются с фоном. */
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus,
+.input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+  -webkit-box-shadow: 0 0 0 1000px #141b38 inset;
+  box-shadow: 0 0 0 1000px #141b38 inset;
+  border: 1px solid var(--line);
+  transition: background-color 9999s ease-out 0s;
+}
+
+.input:autofill {
+  -webkit-text-fill-color: var(--ink);
+  box-shadow: 0 0 0 1000px #141b38 inset;
+  caret-color: var(--ink);
 }
 
 .input--has-action {
@@ -539,4 +562,50 @@ body {
   .check__box::after {
     transition: none;
   }
+}
+
+/* ---------- Страница «Нет связи» ---------- */
+
+.offline {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(180deg, #152a5e 0%, #0b1440 50%, #04072f 100%);
+}
+
+.offline__icon {
+  width: 72px;
+  height: 72px;
+}
+
+.offline h1 {
+  margin: 8px 0 0;
+  font-size: 24px;
+  color: #e8f4fc;
+}
+
+.offline p {
+  max-width: 420px;
+  margin: 0;
+  color: #97a4ca;
+}
+
+.offline__hint {
+  font-size: 14px;
+}
+
+.offline__btn {
+  margin-top: 12px;
+  padding: 12px 26px;
+  border-radius: 10px;
+  background: #3d8fc9;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
 }
