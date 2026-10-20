@@ -1,8 +1,9 @@
-export default function Home() {
-  return (
-    <main style={{ padding: 24 }}>
-      <h1>Морской маршрут</h1>
-      <p>Каркас проекта запущен.</p>
-    </main>
-  );
+import { redirect } from "next/navigation";
+import { getCurrentUser, homeFor } from "@/lib/auth/server";
+
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const user = await getCurrentUser();
+  redirect(user ? homeFor(user.role) : "/login");
 }
