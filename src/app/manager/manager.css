@@ -1,0 +1,332 @@
+/* Карточка перевозки менеджера: формы, строки доходов и расходов, закрытие. */
+
+.mpage {
+  max-width: 940px;
+  margin: 0 auto;
+}
+
+.mpage .back {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: var(--link) !important;
+}
+
+.mpage .back:hover {
+  color: #fff !important;
+}
+
+.mpage__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mpage__meta {
+  margin: 6px 0 18px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.msec {
+  margin-bottom: 16px;
+}
+
+.msec > h2,
+.msec--plain .sv__card h2 {
+  margin: 0 0 14px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.msec--plain {
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+/* ---------- Формы ---------- */
+
+.mform__fields,
+.crow__fields,
+.lcard__fields {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mform__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field--wide {
+  grid-column: 1 / -1;
+}
+
+.field__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #cfe0f2;
+}
+
+.field .control {
+  width: 100%;
+  min-height: 44px;
+  font-size: 15px;
+}
+
+.field__hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.field__error {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bad);
+}
+
+.field--error .control {
+  border-color: var(--bad);
+}
+
+.linkbtn {
+  align-self: flex-start;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--link);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.linkbtn:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.inline-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px;
+  background: #0a1242;
+  border-radius: 12px;
+}
+
+.inline-add .control {
+  flex: 1 1 180px;
+}
+
+.mform__foot,
+.sec-foot,
+.lcard__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.mform__foot {
+  justify-content: flex-end;
+}
+
+.msg {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.msg--ok {
+  color: var(--good);
+}
+
+.msg--error {
+  color: var(--bad);
+}
+
+fieldset:disabled .control {
+  opacity: 0.6;
+}
+
+/* ---------- Контейнеры ---------- */
+
+.clist,
+.llist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.crow {
+  padding: 14px;
+  background: #0a1242;
+  border-radius: 14px;
+}
+
+.crow__fields {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.crow__btns {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- Доходы и расходы ---------- */
+
+.lcard {
+  padding: 16px;
+  background: #0a1242;
+  border-radius: 14px;
+  border-left: 4px solid var(--blue);
+}
+
+.lcard--income {
+  border-left-color: var(--good);
+}
+
+.lcard--expense {
+  border-left-color: var(--warn);
+}
+
+.lcard--new {
+  margin-top: 4px;
+  border-left-color: var(--link);
+}
+
+.lcard__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.lgrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.lgrid .field--wide {
+  grid-column: 1 / -1;
+}
+
+.lgrid__check {
+  grid-column: 1 / -1;
+  min-height: 32px;
+}
+
+/* ---------- Закрытие ---------- */
+
+.fin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+  padding: 16px 18px;
+  background: var(--glass);
+  border: 1px solid rgba(169, 193, 232, 0.2);
+  border-left: 4px solid var(--link);
+  border-radius: 14px;
+}
+
+.fin > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 320px;
+}
+
+.fin strong {
+  font-size: 15px;
+}
+
+.fin span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.fin--closed {
+  border-left-color: var(--good);
+}
+
+.fin > .msg {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.fin__problem {
+  flex-basis: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 138, 122, 0.1);
+  border-left: 3px solid var(--bad);
+  border-radius: 10px;
+  font-size: 13.5px;
+}
+
+.fin__problem--warn {
+  background: rgba(255, 195, 122, 0.1);
+  border-left-color: var(--warn);
+}
+
+.fin__problem ul {
+  margin: 6px 0;
+  padding-left: 18px;
+}
+
+.fin__btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* ---------- Телефон ---------- */
+
+@media (max-width: 760px) {
+  .mform__grid,
+  .lgrid {
+    grid-template-columns: 1fr;
+  }
+
+  .crow__fields {
+    grid-template-columns: 1fr;
+  }
+
+  .crow__btns,
+  .lcard__foot .btn,
+  .mform__foot .btn,
+  .sec-foot .btn {
+    width: 100%;
+  }
+
+  .crow__btns .btn {
+    flex: 1;
+  }
+
+  .mform__foot {
+    justify-content: stretch;
+  }
+}
