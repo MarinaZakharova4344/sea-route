@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# локальная база данных создаётся скриптами db:migrate / db:seed
+data/*.db
+data/*.db-*
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
