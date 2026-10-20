@@ -122,3 +122,26 @@ export function recalcAll(db: Database.Database, now: Date = new Date()): number
   run();
   return shipments.length;
 }
+
+export interface RefreshInfo {
+  refreshedAt: string | null;
+  refreshEveryMinutes: number;
+}
+
+export function refreshInfo(db: Database.Database): RefreshInfo {
+  const row = db.prepare("SELECT refreshed_at FROM analytics_refresh WHERE id = 1").get() as { refreshed_at: string | null } | undefined;
+  const minutes = db.prepare("SELECT value FROM settings WHERE key = 'analytics_refresh_minutes'").get() as { value: string } | undefined;
+  return { refreshedAt: row?.refreshed_at ?? null, refreshEveryMinutes: Number(minutes?.value ?? 5) };
+}
+
+/**
+ * Аналитика обновляется с задержкой: пересчёт запускается при чтении, если с прошлого прошло больше
+ * заданного числа минут. Так изменения учёта попадают в аналитику не мгновенно, а в пределах этого срока
+ * (или сразу, если нажать «Обновить»).
+ */
+export function ensureFresh(db: Database.Database, now: Date = new Date()): RefreshInfo {
+  const info = refreshInfo(db);
+  const age = info.refreshedAt ? now.getTime() - Date.parse(info.refreshedAt) : Infinity;
+  if (age > info.refreshEveryMinutes * 60_000) recalcAll(db, now);
+  return refreshInfo(db);
+}

@@ -125,6 +125,7 @@ CREATE TABLE IF NOT EXISTS analytics_refresh (
 INSERT OR IGNORE INTO settings (key, value) VALUES
   ('delay_days_threshold', '2'),
   ('overrun_pct_threshold', '10'),
-  ('stale_days_threshold', '5');
+  ('stale_days_threshold', '5'),
+  ('analytics_refresh_minutes', '5');
 
 INSERT OR IGNORE INTO analytics_refresh (id, refreshed_at) VALUES (1, NULL);
