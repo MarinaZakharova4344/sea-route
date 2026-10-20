@@ -11,6 +11,7 @@
 import bcrypt from "bcryptjs";
 import type Database from "better-sqlite3";
 import { applySchema, openDb } from "./index";
+import { recalcAll } from "../lib/recalc";
 
 export const DEMO_PASSWORD = "demo12345";
 
@@ -499,6 +500,7 @@ if (process.argv[1] && /seed\.ts$/.test(process.argv[1].replace(/\\/g, "/"))) {
   const db = openDb();
   applySchema(db);
   const r = seed(db);
+  recalcAll(db);
   console.log(`Демо-данные загружены: перевозок ${r.shipments}, строк доходов и расходов ${r.lines}.`);
   console.log(`Дата отсчёта: ${iso(TODAY)}. Пароль всех демо-пользователей: ${DEMO_PASSWORD}`);
   for (const u of DEMO_USERS) console.log(`  ${u.role.padEnd(8)} ${u.email}`);
