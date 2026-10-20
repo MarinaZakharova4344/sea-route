@@ -1,7 +1,10 @@
 import { jwtVerify, SignJWT } from "jose";
 
 export const SESSION_COOKIE = "sr_session";
+/** Обычный вход: сессия до закрытия браузера, но не дольше 12 часов. */
 export const SESSION_TTL_SECONDS = 60 * 60 * 12;
+/** «Запомнить меня на этом устройстве»: 30 дней. */
+export const REMEMBER_TTL_SECONDS = 60 * 60 * 24 * 30;
 
 const DEV_SECRET = "dev-only-secret-change-me-in-env-0123456789";
 
@@ -49,8 +52,10 @@ export function readCookie(header: string | null, name: string): string | undefi
 
 const secureFlag = () => (process.env.NODE_ENV === "production" ? "; Secure" : "");
 
-export function sessionCookie(token: string): string {
-  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}${secureFlag()}`;
+/** Без `remember` кука «сессионная» и исчезает при закрытии браузера; с ним живёт 30 дней. */
+export function sessionCookie(token: string, remember = false): string {
+  const maxAge = remember ? `; Max-Age=${REMEMBER_TTL_SECONDS}` : "";
+  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax${maxAge}${secureFlag()}`;
 }
 
 export function clearedSessionCookie(): string {

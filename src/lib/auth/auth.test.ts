@@ -41,8 +41,8 @@ function req(method: string, path: string, init: { body?: unknown; cookie?: stri
   });
 }
 
-async function login(email: string, password = PASSWORD): Promise<Response> {
-  return loginRoute.POST(req("POST", "/api/auth/login", { body: { email, password } }));
+async function login(email: string, password = PASSWORD, remember?: boolean): Promise<Response> {
+  return loginRoute.POST(req("POST", "/api/auth/login", { body: { email, password, remember } }));
 }
 
 async function cookieFor(email: string): Promise<string> {
@@ -64,6 +64,16 @@ describe("вход", () => {
     const cookie = res.headers.get("set-cookie") ?? "";
     expect(cookie).toContain("HttpOnly");
     expect(cookie).toContain("SameSite=Lax");
+  });
+
+  it("без «запомнить меня» кука сессионная (без срока), с ним живёт 30 дней", async () => {
+    const plain = (await login(MANAGER)).headers.get("set-cookie") ?? "";
+    expect(plain).not.toContain("Max-Age");
+    const remembered = (await login(MANAGER, PASSWORD, true)).headers.get("set-cookie") ?? "";
+    expect(remembered).toContain(`Max-Age=${60 * 60 * 24 * 30}`);
+    // токен «запомненной» сессии действительно работает
+    const cookie = remembered.split(";")[0];
+    expect((await meRoute.GET(req("GET", "/api/auth/me", { cookie }), undefined)).status).toBe(200);
   });
 
   it("e-mail без учёта регистра и пробелов", async () => {
