@@ -6,7 +6,7 @@
 .app {
   --ink: #e8f4f8;
   --muted: #93a8c8;
-  --line: rgba(169, 193, 232, 0.16);
+  --line: rgba(255, 255, 255, 0.24);
   --glass: #050a2d;
   --blue: #4c9acb;
   --blue2: #1d5c96;
@@ -327,7 +327,7 @@
 .control {
   min-height: 40px;
   padding: 0 14px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 10px;
   background: var(--field);
   color: var(--ink);
@@ -374,9 +374,43 @@ select.control option {
 }
 
 .check-inline input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--blue);
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 7px;
+  background: var(--field);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.check-inline input::after {
+  content: "";
+  width: 6px;
+  height: 11px;
+  margin-top: -2px;
+  border: solid #fff;
+  border-width: 0 2.2px 2.2px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.12s;
+}
+
+.check-inline input:checked {
+  background: #3d8fc9;
+  border-color: transparent;
+}
+
+.check-inline input:checked::after {
+  transform: rotate(45deg) scale(1);
+}
+
+.check-inline input:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
 }
 
 /* ---------- Таблица ---------- */
@@ -588,6 +622,23 @@ select.control option {
 /* ---------- Телефон ---------- */
 
 @media (max-width: 860px) {
+  /* На телефоне шапка жёстко закреплена сверху и не двигается при прокрутке */
+  .app {
+    padding-top: calc(56px + env(safe-area-inset-top));
+  }
+
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .conn {
+    position: static;
+  }
+
   .topbar__nav,
   .topbar__tag {
     display: none;
@@ -613,15 +664,6 @@ select.control option {
   .panel {
     padding: 16px 14px;
     border-radius: 16px;
-  }
-
-  .panel--list {
-    padding: 0;
-    background: none;
-    border: 0;
-    box-shadow: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
   }
 
   .table-wrap {
@@ -653,8 +695,41 @@ select.control option {
     grid-column: 1 / -1;
   }
 
-  .toolbar .btn {
+  .toolbar .btn,
+  .toolbar .btn--ghost {
+    grid-column: 1 / -1;
     width: 100%;
+  }
+
+  .page__head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page__head > .btn {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  /* список перевозок на телефоне: одна панель, строки разделены линиями (как таблица на компьютере) */
+  .cards {
+    gap: 0;
+  }
+
+  .card-item {
+    padding: 14px 2px;
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+  }
+
+  .cards li:first-child .card-item {
+    border-top: 0;
+  }
+
+  .card-item:hover {
+    background: rgba(169, 193, 232, 0.06);
   }
 }
 
@@ -825,7 +900,6 @@ select.control option {
 
 @media (max-width: 860px) {
   .conn {
-    top: 52px;
     padding: 10px 16px;
   }
 }
@@ -834,5 +908,61 @@ select.control option {
   .skeleton__line,
   .skeleton__block {
     animation: none;
+  }
+}
+
+/* ---------- Шапка не должна быть шире экрана телефона ---------- */
+
+.app {
+  overflow-x: clip;
+}
+
+.topbar__inner {
+  min-width: 0;
+}
+
+.install__icon {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .topbar__inner {
+    gap: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .topbar__brand {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .topbar__name {
+    font-size: 15px;
+    line-height: 1.15;
+  }
+
+  .topbar__user {
+    gap: 8px;
+  }
+
+  .topbar .btn--text {
+    padding: 0 12px;
+  }
+
+  /* «Установить» на телефоне: только значок, чтобы шапка помещалась в экран */
+  .install__label {
+    display: none;
+  }
+
+  .install__icon {
+    display: block;
+  }
+
+  .topbar .install__btn {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    padding: 0;
   }
 }
