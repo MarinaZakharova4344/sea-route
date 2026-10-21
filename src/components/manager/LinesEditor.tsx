@@ -214,10 +214,31 @@ function LineCard({ line, counterparties, locked, onCounterpartyAdded }: { line:
     for (const [k, val] of [["plannedAmount", d.plannedAmount], ["actualAmount", d.actualAmount], ["paidAmount", d.paidAmount]] as const) {
       if (Number.isNaN(toIntOrNull(val))) return setErrors({ [k]: "Введите число" });
     }
+    // Отправляем только то, что человек изменил, и то, какими эти поля были у него на экране: так правка не затрёт
+    // изменения, которые в это время внёс другой менеджер в остальные поля, а конфликт по тому же полю будет замечен.
+    const now = toBody(d, false) as Record<string, unknown>;
+    const was = toBody(initial, false) as Record<string, unknown>;
+    const saved: Record<string, unknown> = {
+      description: line.description, counterpartyId: line.counterpartyId, plannedAmount: line.plannedAmount, actualAmount: line.actualAmount,
+      isUnplanned: line.isUnplanned, paymentStatus: line.paymentStatus, paidAmount: line.paidAmount, dueDate: line.dueDate, paidAt: line.paidAt,
+    };
+    const changed: Record<string, unknown> = {};
+    const expect: Record<string, unknown> = {};
+    for (const k of Object.keys(now)) {
+      if (JSON.stringify(now[k]) !== JSON.stringify(was[k])) {
+        changed[k] = now[k];
+        expect[k] = saved[k];
+      }
+    }
     setBusy(true);
-    const res = await call("PATCH", `/api/lines/${line.id}`, toBody(d, false));
+    const res = await call("PATCH", `/api/lines/${line.id}`, { ...changed, expect });
     setBusy(false);
     if (!res.ok) {
+      if (res.status === 409 && (res.details as { code?: string } | null)?.code === "conflict") {
+        window.alert(res.error);
+        router.refresh();
+        return;
+      }
       setErrors(res.fieldErrors);
       return setMsg(Object.keys(res.fieldErrors).length ? "Проверьте поля, отмеченные красным" : res.error);
     }

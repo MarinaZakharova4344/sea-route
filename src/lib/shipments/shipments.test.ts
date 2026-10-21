@@ -461,3 +461,67 @@ describe("API: права ролей и проверка данных", () => {
     expect((await ok.json()).financeClosedAt).toBeTruthy();
   });
 });
+
+describe("два менеджера правят одну перевозку одновременно", () => {
+  let anna: AuthUser;
+  beforeAll(() => {
+    anna = db.prepare("SELECT id, email, name, role FROM users WHERE email = 'anna@searoute.test'").get() as AuthUser;
+  });
+
+  const draft = () => svc.createShipment(db, manager, { cargoDescription: "Мебель" }, T0).id;
+
+  it("правка поля, которое уже изменил другой, отклоняется и чужое значение не затирается", () => {
+    const id = draft();
+    // Иван открыл карточку (груз «Мебель»), Анна успела поменять груз
+    svc.updateShipment(db, anna, id, { cargoDescription: "Техника" }, later(1));
+    try {
+      svc.updateShipment(db, manager, id, { cargoDescription: "Одежда", expect: { cargoDescription: "Мебель" } }, later(2));
+      throw new Error("ожидался конфликт");
+    } catch (e) {
+      const err = e as { status?: number; details?: { code?: string; fields?: string[] }; message: string };
+      expect(err.status).toBe(409);
+      expect(err.details).toMatchObject({ code: "conflict", fields: ["cargoDescription"] });
+      expect(err.message).toContain("Анна");
+    }
+    expect(svc.getShipment(db, id).cargoDescription).toBe("Техника");
+  });
+
+  it("правка другого поля проходит, чужая правка остаётся; а если чужое значение совпало с вводимым, конфликта нет", () => {
+    const id = draft();
+    svc.updateShipment(db, anna, id, { cargoDescription: "Техника" }, later(1));
+    // Иван меняет только статус: груз у него в запросе нет, значит и чужой груз не трогается
+    svc.updateShipment(db, manager, id, { status: "booked", expect: { status: "draft" } }, later(2));
+    const s = svc.getShipment(db, id);
+    expect(s.status).toBe("booked");
+    expect(s.cargoDescription).toBe("Техника");
+    // Иван вводит то же значение, что уже поставила Анна: это не конфликт
+    expect(() => svc.updateShipment(db, manager, id, { cargoDescription: "Техника", expect: { cargoDescription: "Мебель" } }, later(3))).not.toThrow();
+  });
+
+  it("строка: изменение суммы не затирает оплату, которую успел отметить другой; а смена оплаты поверх чужой отклоняется", () => {
+    const id = draft();
+    const line = svc.addLine(db, manager, id, { kind: "income", description: "Счёт", plannedAmount: 100_000, actualAmount: 100_000 }, T0).lines[0];
+    // Анна отметила счёт оплаченным
+    svc.updateLine(db, anna, line.id, { paymentStatus: "paid", paidAmount: 100_000, paidAt: "2026-10-20" }, later(1));
+    // Иван открывал строку до этого и правит только плановую сумму
+    svc.updateLine(db, manager, line.id, { plannedAmount: 110_000, expect: { plannedAmount: 100_000 } }, later(2));
+    const after = svc.getShipment(db, id).lines[0];
+    expect(after.plannedAmount).toBe(110_000);
+    expect(after.paymentStatus).toBe("paid");
+    // Иван пытается сменить статус оплаты по устаревшей карточке (он видел «не оплачено»)
+    try {
+      svc.updateLine(db, manager, line.id, { paymentStatus: "partial", paidAmount: 40_000, expect: { paymentStatus: "unpaid", paidAmount: 0 } }, later(4));
+      throw new Error("ожидался конфликт");
+    } catch (e) {
+      expect((e as { status?: number }).status).toBe(409);
+    }
+    expect(svc.getShipment(db, id).lines[0].paymentStatus).toBe("paid");
+  });
+
+  it("без expect поведение прежнее (программный вызов API): правка применяется", () => {
+    const id = draft();
+    svc.updateShipment(db, anna, id, { cargoDescription: "Техника" }, later(1));
+    svc.updateShipment(db, manager, id, { cargoDescription: "Одежда" }, later(2));
+    expect(svc.getShipment(db, id).cargoDescription).toBe("Одежда");
+  });
+});

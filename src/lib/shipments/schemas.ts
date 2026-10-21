@@ -24,6 +24,12 @@ const optionalText = (max: number) =>
 
 export const SHIPMENT_STATUSES = ["draft", "booked", "in_transit", "arrived", "cancelled"] as const;
 
+/**
+ * Какими были изменяемые поля, когда человек открыл форму. Нужны для защиты от одновременной правки: если пока он
+ * правил, кто-то другой уже изменил это поле, сервер откажет и не затрёт чужую правку.
+ */
+const expectation = z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]));
+
 /** Поля перевозки: все необязательны, чтобы можно было сохранить неполные сведения. */
 export const ShipmentInput = z
   .object({
@@ -36,6 +42,7 @@ export const ShipmentInput = z
     actualDeparture: date.nullable(),
     plannedArrival: date.nullable(),
     actualArrival: date.nullable(),
+    expect: expectation,
   })
   .partial()
   .strict();
@@ -71,6 +78,7 @@ export const LineInput = z
     paidAmount: money,
     dueDate: date.nullable(),
     paidAt: date.nullable(),
+    expect: expectation,
   })
   .partial()
   .strict();

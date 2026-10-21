@@ -323,7 +323,7 @@ function nextNumber(db: Database.Database): string {
   return `SR-${String((row.n ?? 0) + 1).padStart(4, "0")}`;
 }
 
-const COLUMNS: Record<keyof ShipmentInput, string> = {
+const COLUMNS: Record<Exclude<keyof ShipmentInput, "expect">, string> = {
   clientId: "client_id",
   directionId: "direction_id",
   managerId: "manager_id",
@@ -366,15 +366,52 @@ export function createShipment(db: Database.Database, user: AuthUser, input: Shi
   return getShipment(db, run());
 }
 
+/** Кто и когда последним менял поле перевозки (для сообщения о конфликте правок). */
+function lastEditor(db: Database.Database, shipmentId: number, fieldPrefix: string): string {
+  const r = db
+    .prepare("SELECT c.changed_at AS at, u.name AS name FROM change_log c LEFT JOIN users u ON u.id = c.changed_by WHERE c.shipment_id = ? AND c.field LIKE ? ORDER BY c.id DESC LIMIT 1")
+    .get(shipmentId, `${fieldPrefix}%`) as { at: string; name: string | null } | undefined;
+  if (!r) return "";
+  const time = new Date(r.at).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: process.env.APP_TIMEZONE || "Europe/Moscow" });
+  return ` (${r.name ?? "другой пользователь"}, ${time})`;
+}
+
+/**
+ * Защита от одновременной правки: поле, которое человек меняет, не должно было измениться у кого-то другого,
+ * пока форма была открыта. Если уже стало тем значением, которое он вводит, конфликта нет.
+ */
+function assertNoConflict(
+  db: Database.Database,
+  shipmentId: number,
+  expect: Record<string, string | number | boolean | null> | undefined,
+  entries: { key: string; label: string; current: unknown; next: unknown }[],
+): void {
+  if (!expect) return;
+  const conflicts = entries.filter((e) => e.key in expect && expect[e.key] !== e.current && e.current !== e.next);
+  if (conflicts.length === 0) return;
+  throw new ApiError(409, "Пока вы редактировали, это изменил кто-то другой: " + conflicts.map((c) => `«${c.label}»${lastEditor(db, shipmentId, c.label)}`).join(", ") + ". Ваша правка не сохранена, чтобы не затереть чужую. Посмотрите актуальные данные и внесите правку заново.", {
+    code: "conflict",
+    fields: conflicts.map((c) => c.key),
+  });
+}
+
 export function updateShipment(db: Database.Database, user: AuthUser, id: number, input: ShipmentInput, now: Date = new Date()) {
   const row = getRow(db, id);
   assertEditable(row);
   checkReferences(db, input);
 
   const next: Record<string, string | number | null> = {};
-  for (const [key, column] of Object.entries(COLUMNS) as [keyof ShipmentInput, string][]) {
+  for (const [key, column] of Object.entries(COLUMNS) as [Exclude<keyof ShipmentInput, "expect">, string][]) {
     if (input[key] !== undefined) next[column] = input[key] as string | number | null;
   }
+  assertNoConflict(
+    db,
+    id,
+    input.expect,
+    (Object.entries(COLUMNS) as [string, string][])
+      .filter(([, column]) => column in next)
+      .map(([key, column]) => ({ key, label: FIELD_LABELS[column], current: (row as unknown as Record<string, unknown>)[column], next: next[column] })),
+  );
   const merged = { ...row, ...next } as ShipmentRow;
   validateState(merged);
 
@@ -535,6 +572,17 @@ export function updateLine(db: Database.Database, user: AuthUser, id: number, in
     due_date: input.dueDate !== undefined ? input.dueDate : old.due_date,
     paid_at: input.paidAt !== undefined ? input.paidAt : old.paid_at,
   };
+  assertNoConflict(db, old.shipment_id, input.expect, [
+    { key: "description", label: `${describeLine(old)}: название`, current: old.description, next: next.description },
+    { key: "plannedAmount", label: `${describeLine(old)}: плановая сумма`, current: old.planned_amount, next: next.planned_amount },
+    { key: "actualAmount", label: `${describeLine(old)}: фактическая сумма`, current: old.actual_amount, next: next.actual_amount },
+    { key: "paymentStatus", label: `${describeLine(old)}: оплата`, current: old.payment_status, next: next.payment_status },
+    { key: "paidAmount", label: `${describeLine(old)}: оплата`, current: old.paid_amount, next: next.paid_amount },
+    { key: "dueDate", label: `${describeLine(old)}: срок оплаты`, current: old.due_date, next: next.due_date },
+    { key: "paidAt", label: `${describeLine(old)}: дата оплаты`, current: old.paid_at, next: next.paid_at },
+    { key: "counterpartyId", label: `${describeLine(old)}: контрагент`, current: old.counterparty_id, next: next.counterparty_id },
+    { key: "isUnplanned", label: `${describeLine(old)}`, current: old.is_unplanned === 1, next: next.is_unplanned === 1 },
+  ]);
   checkLineRefs(db, next);
   // Сумма изменилась, а оплата «полная»: подтягиваем сумму оплаты, если её не задавали отдельно
   if (next.payment_status === "paid" && input.paidAmount === undefined) next.paid_amount = 0;

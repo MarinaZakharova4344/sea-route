@@ -65,6 +65,7 @@ export default function ShipmentForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const [pending, setPending] = useState(false);
+  const [conflict, setConflict] = useState(false);
   const [adding, setAdding] = useState<null | "client" | "direction">(null);
   const [newClient, setNewClient] = useState("");
   const [newOrigin, setNewOrigin] = useState("");
@@ -87,10 +88,17 @@ export default function ShipmentForm({
       actualArrival: text(v.actualArrival),
     };
     if (mode === "new") return all;
-    // при правке отправляем только изменённое
+    // при правке отправляем только изменённое и то, каким оно было на экране: сервер заметит, что поле успел изменить другой
+    const was = initial as unknown as Record<string, unknown>;
     const changed: Record<string, unknown> = {};
-    for (const [k, val] of Object.entries(all)) if (val !== (initial as unknown as Record<string, unknown>)[k]) changed[k] = val;
-    return changed;
+    const expect: Record<string, unknown> = {};
+    for (const [k, val] of Object.entries(all)) {
+      if (val !== was[k]) {
+        changed[k] = val;
+        expect[k] = was[k] ?? null;
+      }
+    }
+    return Object.keys(changed).length > 0 ? { ...changed, expect } : changed;
   }
 
   async function submit(e: FormEvent) {
@@ -107,9 +115,12 @@ export default function ShipmentForm({
     setPending(false);
     if (!res.ok) {
       setErrors(res.fieldErrors);
+      const conflict = res.status === 409 && (res.details as { code?: string } | null)?.code === "conflict";
+      setConflict(conflict);
       setMessage({ kind: "error", text: Object.keys(res.fieldErrors).length ? "Проверьте поля, отмеченные красным" : res.error });
       return;
     }
+    setConflict(false);
     if (mode === "new") {
       router.push(`/manager/shipments/${(res.data as { id: number }).id}`);
     } else {
@@ -261,6 +272,11 @@ export default function ShipmentForm({
           <span className={`msg msg--${message.kind}`} role={message.kind === "error" ? "alert" : "status"}>
             {message.text}
           </span>
+        )}
+        {conflict && (
+          <button type="button" className="btn btn--ghost" onClick={() => window.location.reload()}>
+            Загрузить актуальные данные
+          </button>
         )}
         {!locked && (
           <button type="submit" className="btn" disabled={pending}>
