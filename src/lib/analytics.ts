@@ -2,7 +2,7 @@
  * Аналитика для руководителя: «Сегодня» (что требует внимания), «Доходность» (кто приносит
  * результат), «Динамика» (что изменилось и какими перевозками это объясняется).
  * Читает готовые расчёты из shipment_metrics (см. recalc.ts), поэтому данные обновляются с задержкой.
- * Правила описаны в docs/04_calculations.md.
+ * Правила описаны в docs/calculations.md.
  */
 import type Database from "better-sqlite3";
 import { diffDays, todayIso } from "./dates";
@@ -39,7 +39,7 @@ export interface Freshness {
   refreshEveryMinutes: number;
 }
 
-interface MetricRow {
+export interface MetricRow {
   id: number;
   number: string;
   status: string;
@@ -62,7 +62,7 @@ interface MetricRow {
   reasons: string;
 }
 
-const METRIC_SELECT = `
+export const METRIC_SELECT = `
   SELECT s.id, s.number, s.status, s.client_id, c.name AS client_name, s.direction_id, d.origin, d.destination,
          u.name AS manager_name, s.planned_arrival, s.updated_at,
          m.revenue, m.cost, m.margin, m.is_preliminary, m.result_date, m.delay_days, m.overrun_pct,
@@ -73,7 +73,7 @@ const METRIC_SELECT = `
   LEFT JOIN directions d ON d.id = s.direction_id
   LEFT JOIN users u ON u.id = s.manager_id`;
 
-const directionName = (r: { origin: string | null; destination: string | null }) => (r.origin ? `${r.origin} → ${r.destination}` : null);
+export const directionName = (r: { origin: string | null; destination: string | null }) => (r.origin ? `${r.origin} → ${r.destination}` : null);
 
 // ---------- «Сегодня»: что требует внимания ----------
 
@@ -208,17 +208,17 @@ export interface ProfitResult {
 const pct = (part: number, whole: number) => (whole === 0 ? 0 : Math.round((part / whole) * 1000) / 10);
 
 /** Перевозки, результат которых относится к периоду (по дате доставки; отменённые с расходами тоже). */
-function deliveredIn(db: Database.Database, from: string, to: string): MetricRow[] {
+export function deliveredIn(db: Database.Database, from: string, to: string): MetricRow[] {
   return db
     .prepare(`${METRIC_SELECT} WHERE s.status IN ('arrived', 'closed', 'cancelled') AND m.result_date BETWEEN ? AND ?`)
     .all(from, to) as MetricRow[];
 }
 
-function isProblem(r: MetricRow, t: { delayDays: number; overrunPct: number }): boolean {
+export function isProblem(r: MetricRow, t: { delayDays: number; overrunPct: number }): boolean {
   return r.delay_days > t.delayDays || r.overrun_pct > t.overrunPct || r.has_overdue_payment === 1;
 }
 
-function totalsOf(rows: MetricRow[], t: { delayDays: number; overrunPct: number }): ProfitTotals {
+export function totalsOf(rows: MetricRow[], t: { delayDays: number; overrunPct: number }): ProfitTotals {
   const revenue = rows.reduce((s, r) => s + r.revenue, 0);
   const cost = rows.reduce((s, r) => s + r.cost, 0);
   const margin = revenue - cost;

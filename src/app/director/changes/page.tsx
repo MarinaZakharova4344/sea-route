@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getDb } from "@/db";
 import FreshnessBar from "@/components/FreshnessBar";
-import { ColumnChart, Delta, DivergingBars, axisMoney } from "@/components/charts";
+import ColumnChart from "@/components/ColumnChart";
+import { Delta, DivergingBars, axisMoney } from "@/components/charts";
 import { getDynamics } from "@/lib/analytics";
 import { formatDate, formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
 import { ensureFresh } from "@/lib/recalc";
@@ -38,7 +39,7 @@ export default async function Changes({ searchParams }: { searchParams: Params }
 
       <div className="seg-control" role="tablist" aria-label="Период">
         {PERIODS.map((x) => (
-          <Link key={x.weeks} href={`/director/changes?weeks=${x.weeks}`} className={`seg-control__btn${x.weeks === weeks ? " seg-control__btn--on" : ""}`} aria-current={x.weeks === weeks ? "true" : undefined}>
+          <Link scroll={false} key={x.weeks} href={`/director/changes?weeks=${x.weeks}`} className={`seg-control__btn${x.weeks === weeks ? " seg-control__btn--on" : ""}`} aria-current={x.weeks === weeks ? "true" : undefined}>
             {x.label}
           </Link>
         ))}
@@ -53,20 +54,22 @@ export default async function Changes({ searchParams }: { searchParams: Params }
           <span className="hero-card__pct">{y.delta.marginPct === null ? "в прошлом периоде перевозок не было" : `${y.delta.marginPct > 0 ? "+" : ""}${formatPercent(y.delta.marginPct)}`}</span>
         </div>
         <div className="compare">
-          <div className="compare__col">
-            <span>Сейчас</span>
+          <Link href={`/director/changes/details/current?weeks=${weeks}`} className="compare__col">
+            <span>Сейчас · {short(y.current.from)}–{short(y.current.to)}</span>
             <strong>{formatMoneyShort(y.currentTotals.margin)}</strong>
             <small>
               {y.currentTotals.count} перевозок · маржа {formatPercent(y.currentTotals.marginPct)}
             </small>
-          </div>
-          <div className="compare__col compare__col--before">
-            <span>Раньше</span>
+            <em className="more-link">Какие перевозки ›</em>
+          </Link>
+          <Link href={`/director/changes/details/previous?weeks=${weeks}`} className="compare__col compare__col--before">
+            <span>Раньше · {short(y.previous.from)}–{short(y.previous.to)}</span>
             <strong>{formatMoneyShort(y.previousTotals.margin)}</strong>
             <small>
               {y.previousTotals.count} перевозок · маржа {formatPercent(y.previousTotals.marginPct)}
             </small>
-          </div>
+            <em className="more-link">Какие перевозки ›</em>
+          </Link>
         </div>
         {fewBefore && <p className="note">В предыдущем периоде мало перевозок ({y.previousTotals.count}), поэтому сравнение может быть неточным.</p>}
       </section>
@@ -81,10 +84,13 @@ export default async function Changes({ searchParams }: { searchParams: Params }
             label: short(w.start),
             value: w.margin,
             tone: w.period,
-            title: `${formatDate(w.start)} — ${formatDate(w.end)}: ${formatMoney(w.margin)}, перевозок ${w.count}`,
+            tip: {
+              title: `${formatDate(w.start)} — ${formatDate(w.end)}`,
+              lines: [`Маржа ${formatMoney(w.margin)}`, `Доставлено перевозок: ${w.count}`, w.period === "current" ? "Выбранный период" : "Предыдущий период"],
+            },
           }))}
         />
-        <p className="hint">Неделя считается по дате доставки груза. Наведите на столбик, чтобы увидеть сумму и число перевозок.</p>
+        <p className="hint">Неделя считается по дате доставки груза. Наведите на столбик (на телефоне нажмите на него), чтобы увидеть сумму и число перевозок.</p>
       </section>
 
       <section aria-label="Почему изменилось">
@@ -92,22 +98,24 @@ export default async function Changes({ searchParams }: { searchParams: Params }
           <h2>Почему так вышло</h2>
         </div>
         <div className="why">
-          <div className="why__card">
+          <Link href={`/director/changes/details/volume?weeks=${weeks}`} className="why__card why__card--link">
             <span className="why__title">Число перевозок</span>
             <Delta value={y.effects.volume} />
             <p>
               {y.delta.count === 0 ? "Перевозок столько же." : `${y.delta.count > 0 ? "Больше" : "Меньше"} на ${Math.abs(y.delta.count)}`} ({y.previousTotals.count} → {y.currentTotals.count}) при средней марже прошлого периода {axisMoney(y.effects.averagePrevious)} ₽ на перевозку.
             </p>
-          </div>
-          <div className="why__card">
+            <em className="more-link">Подробнее: у каких клиентов ›</em>
+          </Link>
+          <Link href={`/director/changes/details/rate?weeks=${weeks}`} className="why__card why__card--link">
             <span className="why__title">Маржа с одной перевозки</span>
             <Delta value={y.effects.rate} />
             <p>
               В среднем {axisMoney(y.effects.averagePrevious)} ₽ → {axisMoney(y.effects.averageCurrent)} ₽ на перевозку.
             </p>
-          </div>
+            <em className="more-link">Подробнее: какие перевозки ›</em>
+          </Link>
         </div>
-        <p className="hint">Вместе эти две причины дают полное изменение маржи ({formatMoney(dir)}).</p>
+        <p className="hint">Вместе эти две причины дают полное изменение маржи ({formatMoney(dir)}). Нажмите на причину, чтобы увидеть, из чего она сложилась.</p>
       </section>
 
       <section aria-label="Какие перевозки повлияли">
@@ -135,6 +143,7 @@ export default async function Changes({ searchParams }: { searchParams: Params }
               label: c.name,
               sub: c.countDelta === 0 ? undefined : `перевозок ${c.countDelta > 0 ? "+" : "−"}${Math.abs(c.countDelta)}`,
               value: c.delta,
+              href: c.id ? `/director/profit/client/${c.id}` : undefined,
             }))}
           />
         )}

@@ -37,7 +37,7 @@ export default async function Profit({ searchParams }: { searchParams: Params })
 
       <div className="seg-control" role="tablist" aria-label="Период">
         {PERIODS.map((x) => (
-          <Link key={x.days} href={href(x.days, by)} className={`seg-control__btn${x.days === days ? " seg-control__btn--on" : ""}`} aria-current={x.days === days ? "true" : undefined}>
+          <Link scroll={false} key={x.days} href={href(x.days, by)} className={`seg-control__btn${x.days === days ? " seg-control__btn--on" : ""}`} aria-current={x.days === days ? "true" : undefined}>
             {x.label}
           </Link>
         ))}
@@ -45,36 +45,37 @@ export default async function Profit({ searchParams }: { searchParams: Params })
 
       <section className="hero-card" aria-label="Итог за период">
         <span className="hero-card__cap">Маржа по перевозкам</span>
-        <div className="hero-card__big">
+        <Link href={`/director/profit/details/margin?days=${days}`} className="hero-card__big hero-card__big--link">
           <span className={p.totals.margin < 0 ? "neg" : ""}>{formatMoneyShort(p.totals.margin)}</span>
           <span className="hero-card__pct">{formatPercent(p.totals.marginPct)} от оборота</span>
-        </div>
-        <dl className="facts">
-          <div>
+          <span className="more-link">Из чего сложилась ›</span>
+        </Link>
+        <dl className="facts facts--links">
+          <Link href={`/director/profit/details/revenue?days=${days}`} className="fact">
             <dt>Оборот</dt>
             <dd>{formatMoneyShort(p.totals.revenue)}</dd>
-          </div>
-          <div>
+          </Link>
+          <Link href={`/director/profit/details/cost?days=${days}`} className="fact">
             <dt>Расходы</dt>
             <dd>{formatMoneyShort(p.totals.cost)}</dd>
-          </div>
-          <div>
+          </Link>
+          <Link href={`/director/profit/details/shipments?days=${days}`} className="fact">
             <dt>Перевозок</dt>
             <dd>{p.totals.count}</dd>
-          </div>
-          <div>
+          </Link>
+          <Link href={`/director/profit/details/problems?days=${days}`} className="fact">
             <dt>С проблемами</dt>
             <dd>
               {p.totals.problemCount} <small>({formatPercent(p.totals.count ? (p.totals.problemCount / p.totals.count) * 100 : 0)})</small>
             </dd>
-          </div>
+          </Link>
         </dl>
 
         <h2 className="h-small">Насколько цифра окончательная</h2>
         <SegmentedBar
           segments={[
-            { label: "Окончательная", value: Math.max(p.totals.finalMargin, 0), color: VIZ.strong },
-            { label: `Предварительная (${p.totals.preliminaryCount})`, value: Math.max(p.totals.preliminaryMargin, 0), color: VIZ.pending },
+            { label: "Окончательная", value: Math.max(p.totals.finalMargin, 0), color: VIZ.strong, href: `/director/profit/details/final?days=${days}` },
+            { label: `Предварительная (${p.totals.preliminaryCount})`, value: Math.max(p.totals.preliminaryMargin, 0), color: VIZ.pending, href: `/director/profit/details/preliminary?days=${days}` },
           ]}
         />
 
@@ -96,7 +97,9 @@ export default async function Profit({ searchParams }: { searchParams: Params })
           </ul>
         </details>
         <p className="hint">
-          В работе ещё {p.inProgress.count} {p.inProgress.count === 1 ? "перевозка" : "перевозок"}: ожидаемая маржа по плану {formatMoneyShort(p.inProgress.expectedMargin)} (в итог не входит).
+          <Link href={`/director/profit/details/inprogress?days=${days}`} className="legend__link">
+            В работе ещё {p.inProgress.count} {p.inProgress.count === 1 ? "перевозка" : "перевозок"}: ожидаемая маржа по плану {formatMoneyShort(p.inProgress.expectedMargin)} (в итог не входит) ›
+          </Link>
         </p>
       </section>
 
@@ -104,10 +107,10 @@ export default async function Profit({ searchParams }: { searchParams: Params })
         <div className="section-head">
           <h2>{by === "client" ? "По клиентам" : "По направлениям"}</h2>
           <div className="seg-control seg-control--small">
-            <Link href={href(days, "client")} className={`seg-control__btn${by === "client" ? " seg-control__btn--on" : ""}`}>
+            <Link scroll={false} href={href(days, "client")} className={`seg-control__btn${by === "client" ? " seg-control__btn--on" : ""}`}>
               Клиенты
             </Link>
-            <Link href={href(days, "direction")} className={`seg-control__btn${by === "direction" ? " seg-control__btn--on" : ""}`}>
+            <Link scroll={false} href={href(days, "direction")} className={`seg-control__btn${by === "direction" ? " seg-control__btn--on" : ""}`}>
               Направления
             </Link>
           </div>

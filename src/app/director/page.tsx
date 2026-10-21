@@ -54,23 +54,26 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
         <ul className="reasons">
           {a.byReason.map((r) => (
             <li key={r.code}>
-              <Link href={href({ reason: reason === r.code ? undefined : r.code })} className={`reason reason--${r.code}${reason === r.code ? " reason--active" : ""}`} aria-pressed={reason === r.code}>
+              <Link href={`/director/details/${r.code}`} className={`reason reason--${r.code}`}>
                 <span className="reason__title">{r.title}</span>
                 <span className="reason__bar">
                   <span style={{ width: `${(r.count / maxCount) * 100}%` }} />
                 </span>
                 <span className="reason__count">{r.count}</span>
+                <span className="reason__chev" aria-hidden="true">
+                  ›
+                </span>
               </Link>
             </li>
           ))}
         </ul>
-        <p className="hint">Нажмите на причину, чтобы показать только такие перевозки. Одна перевозка может иметь несколько причин.</p>
+        <p className="hint">Нажмите на причину, чтобы увидеть, какие перевозки и счета за ней стоят. Одна перевозка может иметь несколько причин.</p>
       </section>
 
       <section className="tiles" aria-label="Деньги под риском">
-        <Tile title="Клиенты не заплатили в срок" value={formatMoneyShort(a.receivables.amount)} sub={`${a.receivables.count} ${plural(a.receivables.count, ["счёт", "счёта", "счетов"])} просрочено`} />
-        <Tile title="Мы не заплатили подрядчикам" value={formatMoneyShort(a.payables.amount)} sub={`${a.payables.count} ${plural(a.payables.count, ["счёт", "счёта", "счетов"])} просрочено`} />
-        <Tile title="Расходы сверх плана" value={formatMoneyShort(a.overrunExtra)} sub="по перевозкам, не закрытым финансово" />
+        <Tile href="/director/details/receivables" title="Клиенты не заплатили в срок" value={formatMoneyShort(a.receivables.amount)} sub={`${a.receivables.count} ${plural(a.receivables.count, ["счёт", "счёта", "счетов"])} просрочено`} />
+        <Tile href="/director/details/payables" title="Мы не заплатили подрядчикам" value={formatMoneyShort(a.payables.amount)} sub={`${a.payables.count} ${plural(a.payables.count, ["счёт", "счёта", "счетов"])} просрочено`} />
+        <Tile href="/director/details/overrun" title="Расходы сверх плана" value={formatMoneyShort(a.overrunExtra)} sub="по перевозкам, не закрытым финансово" />
       </section>
 
       <section aria-label="Перевозки, требующие внимания">
@@ -144,13 +147,14 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
   );
 }
 
-function Tile({ title, value, sub }: { title: string; value: string; sub: string }) {
+function Tile({ href, title, value, sub }: { href: string; title: string; value: string; sub: string }) {
   return (
-    <div className="tile">
+    <Link href={href} className="tile tile--link">
       <span className="tile__title">{title}</span>
       <span className="tile__value">{value}</span>
       <span className="tile__sub">{sub}</span>
-    </div>
+      <span className="tile__more">Подробнее ›</span>
+    </Link>
   );
 }
 

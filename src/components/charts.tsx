@@ -3,6 +3,7 @@
  * Цвета: один оттенок синего для величин, серый для контекста, красный и синий для знака изменения.
  * Подсказки при наведении даёт <title>; все цифры дублируются подписями или таблицей рядом с графиком.
  */
+import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 
 export const VIZ = {
@@ -34,20 +35,14 @@ export function axisMoney(v: number): string {
   return `${sign}${Math.round(abs)}`;
 }
 
-function niceMax(v: number): number {
-  if (v <= 0) return 1;
-  const pow = 10 ** Math.floor(Math.log10(v));
-  const n = v / pow;
-  const step = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
-  return step * pow;
-}
-
 // ---------- Горизонтальный сегментированный индикатор ----------
 
 export interface Segment {
   label: string;
   value: number;
   color: string;
+  /** Куда ведёт нажатие на часть и на подпись. */
+  href?: string;
 }
 
 /** Одна полоса из частей целого (например, окончательная и предварительная маржа). */
@@ -58,7 +53,11 @@ export function SegmentedBar({ segments, format = formatMoney }: { segments: Seg
       <div className="seg" role="img" aria-label={segments.map((s) => `${s.label}: ${format(s.value)}`).join("; ")}>
         {segments.map((s) =>
           s.value > 0 && total > 0 ? (
-            <span key={s.label} className="seg__part" style={{ width: `${(s.value / total) * 100}%`, background: s.color }} title={`${s.label}: ${format(s.value)}`} />
+            s.href ? (
+              <Link key={s.label} href={s.href} className="seg__part seg__part--link" style={{ width: `${(s.value / total) * 100}%`, background: s.color }} title={`${s.label}: ${format(s.value)}. Нажмите, чтобы увидеть перевозки`} />
+            ) : (
+              <span key={s.label} className="seg__part" style={{ width: `${(s.value / total) * 100}%`, background: s.color }} title={`${s.label}: ${format(s.value)}`} />
+            )
           ) : null,
         )}
       </div>
@@ -66,7 +65,15 @@ export function SegmentedBar({ segments, format = formatMoney }: { segments: Seg
         {segments.map((s) => (
           <li key={s.label}>
             <span className="legend__dot" style={{ background: s.color }} />
-            {s.label}: <strong>{format(s.value)}</strong>
+            {s.href ? (
+              <Link href={s.href} className="legend__link">
+                {s.label}: <strong>{format(s.value)}</strong> ›
+              </Link>
+            ) : (
+              <>
+                {s.label}: <strong>{format(s.value)}</strong>
+              </>
+            )}
           </li>
         ))}
       </ul>
@@ -74,110 +81,16 @@ export function SegmentedBar({ segments, format = formatMoney }: { segments: Seg
   );
 }
 
-// ---------- Недельные столбцы: текущий период против предыдущего ----------
-
-export interface Column {
-  label: string;
-  value: number;
-  tone: "current" | "previous";
-  title: string;
-}
-
-export function ColumnChart({ columns, ariaLabel }: { columns: Column[]; ariaLabel: string }) {
-  // Размер подобран под экран телефона, чтобы подписи были читаемы без масштабирования.
-  const W = 360;
-  const H = 230;
-  const pad = { l: 50, r: 6, t: 10, b: 26 };
-  const max = niceMax(Math.max(0, ...columns.map((c) => c.value)));
-  const min = Math.min(0, ...columns.map((c) => c.value));
-  const lo = min < 0 ? -niceMax(-min) : 0;
-  const innerH = H - pad.t - pad.b;
-  const y = (v: number) => pad.t + innerH - ((v - lo) / (max - lo)) * innerH;
-  const zero = y(0);
-  const slot = (W - pad.l - pad.r) / columns.length;
-  const bw = Math.min(28, slot * 0.62);
-  const ticks = [lo, lo + (max - lo) / 4, lo + ((max - lo) * 2) / 4, lo + ((max - lo) * 3) / 4, max].filter((v, i, a) => a.indexOf(v) === i);
-  const every = columns.length > 8 ? 2 : 1;
-
-  return (
-    <figure className="chart">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={ariaLabel} className="chart__svg">
-        <defs>
-          <linearGradient id="col-current" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#FFB878" />
-            <stop offset="1" stopColor="#F07F34" />
-          </linearGradient>
-        </defs>
-        {ticks.map((t) => (
-          <g key={t}>
-            <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} stroke={t === 0 ? VIZ.axis : VIZ.grid} strokeWidth={t === 0 ? 1.5 : 1} />
-            <text x={pad.l - 8} y={y(t) + 4} textAnchor="end" fontSize="10.5" fill={VIZ.ink3}>
-              {axisMoney(t)}
-            </text>
-          </g>
-        ))}
-        {columns.map((c, i) => {
-          const x = pad.l + slot * i + (slot - bw) / 2;
-          const top = Math.min(y(c.value), zero);
-          const h = Math.max(Math.abs(y(c.value) - zero), c.value === 0 ? 0 : 2);
-          return (
-            <g key={i}>
-              {/* область наведения шире столбика */}
-              <rect x={pad.l + slot * i} y={pad.t} width={slot} height={innerH} fill="transparent">
-                <title>{c.title}</title>
-              </rect>
-              {h > 0 && (
-                <path
-                  d={c.value >= 0 ? roundedTop(x, top, bw, h, 4) : roundedBottom(x, top, bw, h, 4)}
-                  fill={c.tone === "current" ? "url(#col-current)" : VIZ.muted}
-                >
-                  <title>{c.title}</title>
-                </path>
-              )}
-              {i % every === 0 && (
-                <text x={x + bw / 2} y={H - 8} textAnchor="middle" fontSize="10.5" fill={VIZ.ink2}>
-                  {c.label}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-      <figcaption className="legend legend--inline">
-        <span>
-          <span className="legend__dot" style={{ background: VIZ.accent }} />
-          Выбранный период
-        </span>
-        <span>
-          <span className="legend__dot" style={{ background: VIZ.muted }} />
-          Предыдущий период
-        </span>
-      </figcaption>
-    </figure>
-  );
-}
-
-/** Столбик со скруглением только у свободного края (4 px), основание ровное. */
-function roundedTop(x: number, y: number, w: number, h: number, r: number): string {
-  const rr = Math.min(r, h, w / 2);
-  return `M${x},${y + h} V${y + rr} Q${x},${y} ${x + rr},${y} H${x + w - rr} Q${x + w},${y} ${x + w},${y + rr} V${y + h} Z`;
-}
-
-function roundedBottom(x: number, y: number, w: number, h: number, r: number): string {
-  const rr = Math.min(r, h, w / 2);
-  return `M${x},${y} H${x + w} V${y + h - rr} Q${x + w},${y + h} ${x + w - rr},${y + h} H${x + rr} Q${x},${y + h} ${x},${y + h - rr} Z`;
-}
-
 // ---------- Расходящиеся полосы: изменение по клиентам ----------
 
-export function DivergingBars({ rows }: { rows: { key: string; label: string; sub?: string; value: number }[] }) {
+export function DivergingBars({ rows }: { rows: { key: string; label: string; sub?: string; value: number; href?: string }[] }) {
   const max = Math.max(1, ...rows.map((r) => Math.abs(r.value)));
   return (
     <ul className="div-bars">
       {rows.map((r) => {
         const w = (Math.abs(r.value) / max) * 50;
-        return (
-          <li key={r.key} className="div-bars__row">
+        const body = (
+<>
             <div className="div-bars__label">
               <span>{r.label}</span>
               {r.sub && <small>{r.sub}</small>}
@@ -198,6 +111,20 @@ export function DivergingBars({ rows }: { rows: { key: string; label: string; su
               {r.value < 0 ? "▼ −" : r.value > 0 ? "▲ +" : ""}
               {axisMoney(Math.abs(r.value))} ₽
             </div>
+            </>
+        );
+        return (
+          <li key={r.key}>
+            {r.href ? (
+              <Link href={r.href} className="div-bars__row div-bars__row--link">
+                {body}
+                <span className="div-bars__chev" aria-hidden="true">
+                  ›
+                </span>
+              </Link>
+            ) : (
+              <div className="div-bars__row">{body}</div>
+            )}
           </li>
         );
       })}
