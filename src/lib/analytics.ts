@@ -13,11 +13,12 @@ import { loadThresholds } from "./recalc";
 
 export const addDaysIso = (iso: string, n: number): string => new Date(Date.parse(`${iso}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
-export type ReasonCode = "delay" | "overrun" | "overdue_payment" | "missing_fields" | "stale";
+export type ReasonCode = "delay" | "overrun" | "overdue_payment" | "missing_fields" | "stale" | "rescheduled";
 
 /** Что руководителю стоит сделать по каждой причине. */
 export const REASON_ACTIONS: Record<ReasonCode, string> = {
   delay: "Узнать у менеджера новую дату прибытия и предупредить клиента",
+  rescheduled: "Выяснить, почему срок переносился, и получить от менеджера реальную дату прибытия, которую можно обещать клиенту",
   overdue_payment: "Выяснить, почему счёт не оплачен, и договориться о сроке",
   overrun: "Проверить дополнительные расходы и решить, можно ли выставить их клиенту",
   stale: "Попросить менеджера обновить сведения по перевозке",
@@ -26,6 +27,7 @@ export const REASON_ACTIONS: Record<ReasonCode, string> = {
 
 export const REASON_TITLES: Record<ReasonCode, string> = {
   delay: "Опоздание",
+  rescheduled: "Срок переносили",
   overdue_payment: "Просрочена оплата",
   overrun: "Перерасход",
   stale: "Нет обновлений",
@@ -33,7 +35,7 @@ export const REASON_TITLES: Record<ReasonCode, string> = {
 };
 
 /** Чем выше вес, тем выше перевозка в списке «Сегодня». */
-const WEIGHT: Record<ReasonCode, number> = { delay: 50, overdue_payment: 40, overrun: 30, stale: 20, missing_fields: 10 };
+const WEIGHT: Record<ReasonCode, number> = { delay: 50, overdue_payment: 40, overrun: 30, rescheduled: 25, stale: 20, missing_fields: 10 };
 
 export interface Freshness {
   refreshedAt: string | null;
@@ -60,6 +62,8 @@ export interface MetricRow {
   delay_days: number;
   overrun_pct: number;
   has_overdue_payment: number;
+  reschedule_count: number;
+  original_delay_days: number;
   reasons: string;
 }
 
@@ -67,7 +71,7 @@ export const METRIC_SELECT = `
   SELECT s.id, s.number, s.status, s.client_id, c.name AS client_name, s.direction_id, d.origin, d.destination,
          u.name AS manager_name, s.planned_arrival, s.updated_at,
          m.revenue, m.cost, m.margin, m.is_preliminary, m.result_date, m.delay_days, m.overrun_pct,
-         m.has_overdue_payment, m.attention_reasons AS reasons
+         m.has_overdue_payment, m.reschedule_count, m.original_delay_days, m.attention_reasons AS reasons
   FROM shipments s
   JOIN shipment_metrics m ON m.shipment_id = s.id
   LEFT JOIN clients c ON c.id = s.client_id

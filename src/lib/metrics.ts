@@ -7,6 +7,9 @@ import { diffDays, toDay } from "./dates";
 /** Как поле «закрыта финансово» записывается в историю изменений (по нему находят пересмотры задним числом). */
 export const FINANCE_CLOSE_FIELD = "Финансовое закрытие";
 
+/** Как плановая дата прибытия записывается в историю изменений (по ней считаются переносы срока). */
+export const PLANNED_ARRIVAL_FIELD = "Плановая дата прибытия";
+
 export type ShipmentStatus = "draft" | "booked" | "in_transit" | "arrived" | "closed" | "cancelled";
 
 export interface ShipmentInput {
@@ -20,6 +23,8 @@ export interface ShipmentInput {
   financeClosedAt: string | null;
   updatedAt: string;
   containers: { number: string | null }[];
+  /** Из истории изменений: первоначальная плановая дата прибытия и сколько раз её переносили. */
+  rescheduling?: { originalPlannedArrival: string; count: number };
 }
 
 export interface LineInput {
@@ -38,7 +43,7 @@ export interface Thresholds {
 
 export const DEFAULT_THRESHOLDS: Thresholds = { delayDays: 2, overrunPct: 10, staleDays: 5 };
 
-export type ReasonCode = "delay" | "overrun" | "overdue_payment" | "missing_fields" | "stale";
+export type ReasonCode = "delay" | "overrun" | "overdue_payment" | "missing_fields" | "stale" | "rescheduled";
 
 export interface Reason {
   code: ReasonCode;
@@ -57,6 +62,10 @@ export interface ShipmentMetrics {
   staleDays: number;
   missingFields: string[];
   attentionReasons: Reason[];
+  /** Сколько раз плановую дату прибытия переносили (меняли с одной даты на другую). */
+  rescheduleCount: number;
+  /** Опоздание не к текущему плану, а к первоначальной плановой дате. */
+  originalDelayDays: number;
 }
 
 /** Статусы, в которых перевозка «в работе» и от менеджера ожидаются обновления. */
@@ -109,6 +118,15 @@ export function computeShipmentMetrics(
     else if (s.status === "booked" || s.status === "in_transit") delayDays = Math.max(0, diffDays(s.plannedArrival, today));
   }
 
+  // Опоздание к первоначальной дате: перенос плановой даты не должен «прятать» задержку.
+  const rescheduleCount = s.rescheduling?.count ?? 0;
+  let originalDelayDays = 0;
+  if (s.rescheduling) {
+    const original = s.rescheduling.originalPlannedArrival;
+    if (s.actualArrival) originalDelayDays = Math.max(0, diffDays(original, s.actualArrival));
+    else if (s.status === "booked" || s.status === "in_transit") originalDelayDays = Math.max(0, diffDays(original, today));
+  }
+
   // Перерасход: насколько фактические расходы превысили план (внеплановые считаются целиком).
   const known = expenses.filter((l) => l.actualAmount !== null);
   const plannedKnown = known.reduce((sum, l) => sum + l.plannedAmount, 0);
@@ -125,8 +143,12 @@ export function computeShipmentMetrics(
   const missing = missingFields(s);
 
   const reasons: Reason[] = [];
-  if ((s.status === "booked" || s.status === "in_transit") && delayDays > thresholds.delayDays) {
-    reasons.push({ code: "delay", text: `Опоздание ${delayDays} дн.` });
+  const times = `${rescheduleCount} ${rescheduleCount === 1 ? "раз" : rescheduleCount < 5 ? "раза" : "раз"}`;
+  const delayed = (s.status === "booked" || s.status === "in_transit") && delayDays > thresholds.delayDays;
+  if (delayed) {
+    // Если срок переносили, показываем и опоздание к первоначальной дате: иначе перенос «съедает» часть задержки
+    const hidden = rescheduleCount > 0 && originalDelayDays > delayDays ? ` (срок переносили ${times}, к первоначальной дате ${originalDelayDays} дн.)` : "";
+    reasons.push({ code: "delay", text: `Опоздание ${delayDays} дн.${hidden}` });
   }
   const live = s.status !== "draft" && s.status !== "cancelled" && s.financeClosedAt === null;
   if (live && overrunPct > thresholds.overrunPct) {
@@ -137,6 +159,14 @@ export function computeShipmentMetrics(
   }
   if (s.status !== "draft" && s.status !== "cancelled" && missing.length > 0) {
     reasons.push({ code: "missing_fields", text: `Не заполнено: ${missing.join(", ")}` });
+  }
+  // Срок переносили: в пути или забронирована, и либо к первоначальной дате уже опаздывает больше порога, либо переносили
+  // два раза и больше (перевозка с плавающим сроком ненадёжна, даже если сейчас всё «по плану»).
+  if (!delayed && (s.status === "booked" || s.status === "in_transit") && rescheduleCount > 0 && (originalDelayDays > thresholds.delayDays || rescheduleCount >= 2)) {
+    reasons.push({
+      code: "rescheduled",
+      text: originalDelayDays > 0 ? `Срок прибытия переносили ${times}: к первоначальной дате уже ${originalDelayDays} дн. опоздания` : `Срок прибытия переносили ${times}`,
+    });
   }
   if (isActive && staleDays > thresholds.staleDays) {
     reasons.push({ code: "stale", text: `Не обновлялась ${staleDays} дн.` });
@@ -154,5 +184,7 @@ export function computeShipmentMetrics(
     staleDays: isActive ? staleDays : 0,
     missingFields: missing,
     attentionReasons: reasons,
+    rescheduleCount,
+    originalDelayDays,
   };
 }

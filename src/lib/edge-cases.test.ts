@@ -153,3 +153,29 @@ describe("случай 3: частичная оплата без даты", () =
     expect(row.due).toBe(30_000);
   });
 });
+
+describe("случай 4: менеджер передвигает плановую дату, и опоздание «исчезает»", () => {
+  // Почему выбран: исходная боль руководителя. Если считать опоздание только от текущего плана, перенос срока прячет задержку.
+  it("перенос срока виден в аналитике, первое заполнение даты переносом не считается", async () => {
+    const det = await import("./analytics-details");
+    const id = shipment("2026-10-20", "2026-11-05", "in_transit");
+    // груз в пути, срок был 05.11, к 30.11 уже опаздывает; менеджер передвигает срок на 25.11 («всё под контролем»)
+    svc.updateShipment(db, manager, id, { plannedArrival: "2026-12-05", expect: { plannedArrival: "2026-11-05" } }, NOW);
+    recalc.recalcAll(db, NOW);
+    const a = analytics.getAttention(db, "2026-11-30");
+    const item = a.items.find((i) => i.id === id)!;
+    const codes = item.reasons.map((r) => r.code);
+    expect(codes).toContain("rescheduled");
+    expect(codes).not.toContain("delay"); // по текущему плану (05.12) опоздания нет
+    expect(item.reasons.find((r) => r.code === "rescheduled")!.text).toContain("25 дн.");
+    const page = det.getAttentionDetail(db, "rescheduled", "2026-11-30");
+    expect(page.groups[0].items.some((i) => i.shipmentId === id)).toBe(true);
+
+    // первое заполнение плановой даты (из пустого значения) переносом не считается
+    const fresh = svc.createShipment(db, manager, { status: "in_transit", actualDeparture: "2026-11-20", plannedDeparture: "2026-11-20" }, NOW).id;
+    svc.updateShipment(db, manager, fresh, { plannedArrival: "2026-12-30" }, NOW);
+    recalc.recalcAll(db, NOW);
+    const row = db.prepare("SELECT reschedule_count n FROM shipment_metrics WHERE shipment_id = ?").get(fresh) as { n: number };
+    expect(row.n).toBe(0);
+  });
+});

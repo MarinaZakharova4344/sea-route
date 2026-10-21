@@ -544,7 +544,8 @@ select.control option {
   background: rgba(255, 138, 122, 0.12);
 }
 
-.chip--overrun {
+.chip--overrun,
+.chip--rescheduled {
   color: var(--warn);
   background: rgba(255, 195, 122, 0.12);
 }

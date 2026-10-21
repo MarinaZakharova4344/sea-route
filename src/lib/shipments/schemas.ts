@@ -97,7 +97,7 @@ export const ListQuery = z.object({
   directionId: z.coerce.number().int().positive().optional(),
   managerId: z.coerce.number().int().positive().optional(),
   q: z.string().trim().max(100).optional(),
-  attention: z.enum(["delay", "overrun", "overdue_payment", "missing_fields", "stale", "any"]).optional(),
+  attention: z.enum(["delay", "rescheduled", "overrun", "overdue_payment", "missing_fields", "stale", "any"]).optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });

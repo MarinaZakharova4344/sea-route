@@ -241,3 +241,40 @@ describe("настраиваемые пороги", () => {
     expect(m.attentionReasons.map((r) => r.code)).toContain("delay");
   });
 });
+
+describe("перенос срока прибытия не прячет задержку", () => {
+  const TODAY = "2026-10-20";
+  const base = { status: "in_transit" as const, actualArrival: null, updatedAt: "2026-10-19T10:00:00Z" };
+
+  it("срок передвинули в будущее: опоздания по текущему плану нет, но к первоначальной дате груз уже опаздывает", () => {
+    const m = computeShipmentMetrics(shipment({ ...base, plannedArrival: "2026-10-25", rescheduling: { originalPlannedArrival: "2026-10-12", count: 1 } }), [], TODAY);
+    expect(m.delayDays).toBe(0);
+    expect(m.originalDelayDays).toBe(8);
+    expect(m.attentionReasons.map((r) => r.code)).toEqual(["rescheduled"]);
+    expect(m.attentionReasons[0].text).toContain("8 дн.");
+  });
+
+  it("два переноса и больше — причина, даже если к первоначальной дате ещё не опаздывает", () => {
+    const m = computeShipmentMetrics(shipment({ ...base, plannedArrival: "2026-11-10", rescheduling: { originalPlannedArrival: "2026-10-30", count: 2 } }), [], TODAY);
+    expect(m.attentionReasons.map((r) => r.code)).toEqual(["rescheduled"]);
+    expect(m.attentionReasons[0].text).toContain("2 раза");
+  });
+
+  it("один небольшой перенос без опоздания к первоначальной дате — не причина", () => {
+    const m = computeShipmentMetrics(shipment({ ...base, plannedArrival: "2026-10-28", rescheduling: { originalPlannedArrival: "2026-10-26", count: 1 } }), [], TODAY);
+    expect(m.attentionReasons.map((r) => r.code)).not.toContain("rescheduled");
+  });
+
+  it("если опоздание уже видно по текущему плану, причина одна («Опоздание»), и в ней сказано про перенос", () => {
+    const m = computeShipmentMetrics(shipment({ ...base, plannedArrival: "2026-10-15", rescheduling: { originalPlannedArrival: "2026-10-05", count: 1 } }), [], TODAY);
+    expect(m.attentionReasons.map((r) => r.code)).toEqual(["delay"]);
+    expect(m.attentionReasons[0].text).toContain("Опоздание 5 дн.");
+    expect(m.attentionReasons[0].text).toContain("к первоначальной дате 15 дн.");
+  });
+
+  it("прибывшая и закрытая перевозки причиной не становятся, но опоздание к первоначальной дате считается", () => {
+    const m = computeShipmentMetrics(shipment({ status: "arrived", plannedArrival: "2026-10-20", actualArrival: "2026-10-20", rescheduling: { originalPlannedArrival: "2026-10-10", count: 1 } }), [], TODAY);
+    expect(m.attentionReasons.map((r) => r.code)).not.toContain("rescheduled");
+    expect(m.originalDelayDays).toBe(10);
+  });
+});

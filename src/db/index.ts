@@ -15,6 +15,8 @@ export function openDb(file: string = process.env.DATABASE_PATH ?? DEFAULT_DB_PA
 /** Колонки, добавленные после первой версии схемы: для баз, созданных раньше (CREATE TABLE IF NOT EXISTS их не добавит). */
 const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "users", column: "disabled_at", ddl: "ALTER TABLE users ADD COLUMN disabled_at TEXT" },
+  { table: "shipment_metrics", column: "reschedule_count", ddl: "ALTER TABLE shipment_metrics ADD COLUMN reschedule_count INTEGER NOT NULL DEFAULT 0" },
+  { table: "shipment_metrics", column: "original_delay_days", ddl: "ALTER TABLE shipment_metrics ADD COLUMN original_delay_days INTEGER NOT NULL DEFAULT 0" },
 ];
 
 function ensureColumns(db: Database.Database): void {

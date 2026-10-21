@@ -110,6 +110,8 @@ CREATE TABLE IF NOT EXISTS shipment_metrics (
   stale_days          INTEGER NOT NULL DEFAULT 0,
   missing_fields      TEXT NOT NULL DEFAULT '[]',
   attention_reasons   TEXT NOT NULL DEFAULT '[]',
+  reschedule_count    INTEGER NOT NULL DEFAULT 0,
+  original_delay_days INTEGER NOT NULL DEFAULT 0,
   calculated_at       TEXT NOT NULL
 );
 

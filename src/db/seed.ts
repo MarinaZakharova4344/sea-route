@@ -335,6 +335,15 @@ function generateShipments(ids: { clients: number[]; counterparties: Record<stri
       actualArr: null, financeClosed: null, updatedAt: addDays(TODAY, -stale),
       containers: [{ number: containerNumber(), type: "40HC" }], lines: [], changes: [],
     };
+    // Первая из них ещё и «со спрятанной задержкой»: срок прибытия дважды передвигали, по текущему плану всё в порядке,
+    // а к первоначальной дате она уже опаздывает (причина «Срок переносили»).
+    if (k === 0) {
+      const original = addDays(TODAY, -6);
+      s.changes.push(
+        { field: "Плановая дата прибытия", oldValue: iso(original), newValue: iso(addDays(TODAY, -1)), at: addDays(TODAY, -11) },
+        { field: "Плановая дата прибытия", oldValue: iso(addDays(TODAY, -1)), newValue: iso(s.plannedArr as Date), at: addDays(TODAY, -9) },
+      );
+    }
     buildLines(s, p, ids, dir);
     ships.push(s);
   }

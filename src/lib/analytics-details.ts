@@ -65,7 +65,7 @@ const who = (name: string | null) => name ?? "не назначен";
 
 // ---------- «Сегодня»: причины и деньги под риском ----------
 
-export const ATTENTION_KINDS = ["receivables", "payables", "overrun", "overdue_payment", "delay", "stale", "missing_fields"] as const;
+export const ATTENTION_KINDS = ["receivables", "payables", "overrun", "overdue_payment", "delay", "rescheduled", "stale", "missing_fields"] as const;
 export type AttentionKind = (typeof ATTENTION_KINDS)[number];
 
 interface OverdueLine {
@@ -271,6 +271,37 @@ export function getAttentionDetail(db: Database.Database, kind: AttentionKind, t
           ]
         : [],
       empty: "Опаздывающих перевозок нет.",
+    };
+  }
+
+  if (kind === "rescheduled") {
+    const rows = reasonRows(db, "rescheduled").sort((a, b) => b.original_delay_days - a.original_delay_days || b.reschedule_count - a.reschedule_count);
+    return {
+      kind,
+      title: REASON_TITLES.rescheduled,
+      lead: "Перевозки, у которых менеджер передвигал плановую дату прибытия. Опоздание считается от текущей плановой даты, поэтому перенос срока может скрыть задержку: груз идёт позже, чем обещали сначала, а по текущему плану всё в порядке. Сюда попадают перевозки в пути или забронированные, у которых к первоначальной дате уже опоздание больше порога, либо срок переносили два раза и больше.",
+      summary: [
+        { label: "Перевозок", value: String(rows.length) },
+        { label: "Наибольшее опоздание к первоначальной дате", value: rows.length ? `${rows[0].original_delay_days} дн.` : "—" },
+      ],
+      action: REASON_ACTIONS.rescheduled,
+      groups: rows.length
+        ? [
+            {
+              title: "От самых «передвинутых»",
+              items: rows.map<DetailItem>((r) => ({
+                shipmentId: r.id,
+                href: shipmentHref(r.id),
+                title: `${r.number} · ${r.client_name ?? "Клиент не указан"}`,
+                sub: `${directionName(r) ?? "направление не указано"}, сейчас прибытие по плану ${formatDate(r.planned_arrival)}`,
+                note: `Срок переносили: ${r.reschedule_count}. Ответственный: ${who(r.manager_name)}. Подробности в истории перевозки`,
+                valueText: r.original_delay_days > 0 ? `${r.original_delay_days} дн.` : `${r.reschedule_count} пер.`,
+                tone: "warn",
+              })),
+            },
+          ]
+        : [],
+      empty: "Перевозок с переносом срока, требующих внимания, нет.",
     };
   }
 

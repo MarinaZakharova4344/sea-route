@@ -1,5 +1,6 @@
 import type Database from "better-sqlite3";
 import { todayIso } from "./dates";
+import { PLANNED_ARRIVAL_FIELD } from "./metrics";
 import {
   computeShipmentMetrics,
   DEFAULT_THRESHOLDS,
@@ -56,6 +57,17 @@ export function recalcAll(db: Database.Database, now: Date = new Date()): number
   }[];
   const lines = db.prepare("SELECT * FROM finance_lines").all() as LineRow[];
 
+  // Переносы срока: меняли плановую дату прибытия с одной даты на другую (первое заполнение переносом не считается)
+  const reschedules = new Map<number, { originalPlannedArrival: string; count: number }>();
+  const changes = db
+    .prepare("SELECT shipment_id, old_value, new_value FROM change_log WHERE field = ? AND old_value IS NOT NULL AND new_value IS NOT NULL ORDER BY id")
+    .all(PLANNED_ARRIVAL_FIELD) as { shipment_id: number; old_value: string; new_value: string }[];
+  for (const c of changes) {
+    if (c.old_value === c.new_value) continue;
+    const prev = reschedules.get(c.shipment_id);
+    reschedules.set(c.shipment_id, { originalPlannedArrival: prev?.originalPlannedArrival ?? c.old_value, count: (prev?.count ?? 0) + 1 });
+  }
+
   const containersBy = new Map<number, { number: string | null }[]>();
   for (const c of containers) {
     containersBy.set(c.shipment_id, [...(containersBy.get(c.shipment_id) ?? []), { number: c.number }]);
@@ -75,14 +87,15 @@ export function recalcAll(db: Database.Database, now: Date = new Date()): number
 
   const upsert = db.prepare(`INSERT INTO shipment_metrics
     (shipment_id, revenue, cost, margin, is_preliminary, result_date, delay_days, overrun_pct,
-     has_overdue_payment, stale_days, missing_fields, attention_reasons, calculated_at)
-    VALUES (@id, @revenue, @cost, @margin, @prelim, @resultDate, @delay, @overrun, @overdue, @stale, @missing, @reasons, @at)
+     has_overdue_payment, stale_days, missing_fields, attention_reasons, reschedule_count, original_delay_days, calculated_at)
+    VALUES (@id, @revenue, @cost, @margin, @prelim, @resultDate, @delay, @overrun, @overdue, @stale, @missing, @reasons, @reschedules, @originalDelay, @at)
     ON CONFLICT (shipment_id) DO UPDATE SET
       revenue = excluded.revenue, cost = excluded.cost, margin = excluded.margin,
       is_preliminary = excluded.is_preliminary, result_date = excluded.result_date,
       delay_days = excluded.delay_days, overrun_pct = excluded.overrun_pct,
       has_overdue_payment = excluded.has_overdue_payment, stale_days = excluded.stale_days,
       missing_fields = excluded.missing_fields, attention_reasons = excluded.attention_reasons,
+      reschedule_count = excluded.reschedule_count, original_delay_days = excluded.original_delay_days,
       calculated_at = excluded.calculated_at`);
 
   const at = now.toISOString();
@@ -99,6 +112,7 @@ export function recalcAll(db: Database.Database, now: Date = new Date()): number
         financeClosedAt: s.finance_closed_at,
         updatedAt: s.updated_at,
         containers: containersBy.get(s.id) ?? [],
+        rescheduling: reschedules.get(s.id),
       };
       const m = computeShipmentMetrics(input, linesBy.get(s.id) ?? [], today, thresholds);
       upsert.run({
@@ -114,6 +128,8 @@ export function recalcAll(db: Database.Database, now: Date = new Date()): number
         stale: m.staleDays,
         missing: JSON.stringify(m.missingFields),
         reasons: JSON.stringify(m.attentionReasons),
+        reschedules: m.rescheduleCount,
+        originalDelay: m.originalDelayDays,
         at,
       });
     }
