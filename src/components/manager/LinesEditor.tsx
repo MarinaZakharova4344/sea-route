@@ -87,7 +87,41 @@ function toBody(d: Draft, includeKind: boolean) {
 }
 
 /** Поля одной строки дохода или расхода. */
-function LineFields({ d, set, errors, counterparties }: { d: Draft; set: (patch: Partial<Draft>) => void; errors: Record<string, string>; counterparties: Counterparty[] }) {
+const COUNTERPARTY_TYPES = [
+  { value: "carrier", label: "Перевозчик" },
+  { value: "terminal", label: "Терминал" },
+  { value: "broker", label: "Брокер" },
+  { value: "other", label: "Другой подрядчик" },
+];
+
+function LineFields({
+  d,
+  set,
+  errors,
+  counterparties,
+  onCounterpartyAdded,
+}: {
+  d: Draft;
+  set: (patch: Partial<Draft>) => void;
+  errors: Record<string, string>;
+  counterparties: Counterparty[];
+  onCounterpartyAdded: (c: Counterparty) => void;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+  const [type, setType] = useState("carrier");
+  const [addError, setAddError] = useState<string | null>(null);
+
+  async function addCounterparty() {
+    setAddError(null);
+    const res = await call<Counterparty>("POST", "/api/counterparties", { name, type });
+    if (!res.ok) return setAddError(res.fieldErrors.name ?? res.error);
+    onCounterpartyAdded(res.data);
+    set({ counterpartyId: String(res.data.id) });
+    setName("");
+    setAdding(false);
+  }
+
   return (
     <div className="lgrid">
       <Field label="За что" error={errors.description} wide>
@@ -102,7 +136,31 @@ function LineFields({ d, set, errors, counterparties }: { d: Draft; set: (patch:
             </option>
           ))}
         </select>
+        {d.kind === "expense" && !adding && (
+          <button type="button" className="linkbtn" onClick={() => setAdding(true)}>
+            + Новый контрагент
+          </button>
+        )}
       </Field>
+      {adding && (
+        <div className="inline-add field--wide">
+          <input className="control" placeholder="Название перевозчика или подрядчика" value={name} onChange={(e) => setName(e.target.value)} maxLength={200} autoFocus />
+          <select className="control" value={type} onChange={(e) => setType(e.target.value)} aria-label="Вид подрядчика">
+            {COUNTERPARTY_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+          <button type="button" className="btn" onClick={addCounterparty}>
+            Добавить
+          </button>
+          <button type="button" className="btn btn--ghost" onClick={() => setAdding(false)}>
+            Отмена
+          </button>
+          {addError && <span className="msg msg--error">{addError}</span>}
+        </div>
+      )}
       <Field label="План, ₽" error={errors.plannedAmount}>
         <input className="control" inputMode="numeric" value={d.plannedAmount} onChange={(e) => set({ plannedAmount: e.target.value })} />
       </Field>
@@ -141,7 +199,7 @@ function LineFields({ d, set, errors, counterparties }: { d: Draft; set: (patch:
   );
 }
 
-function LineCard({ line, counterparties, locked }: { line: Line; counterparties: Counterparty[]; locked: boolean }) {
+function LineCard({ line, counterparties, locked, onCounterpartyAdded }: { line: Line; counterparties: Counterparty[]; locked: boolean; onCounterpartyAdded: (c: Counterparty) => void }) {
   const router = useRouter();
   const initial = fromLine(line);
   const [d, setD] = useState<Draft>(initial);
@@ -183,7 +241,7 @@ function LineCard({ line, counterparties, locked }: { line: Line; counterparties
         {line.actualAmount === null && <span className="chip">нет факта</span>}
       </div>
       <fieldset disabled={locked || busy} className="lcard__fields">
-        <LineFields d={d} set={(p) => setD((x) => ({ ...x, ...p }))} errors={errors} counterparties={counterparties} />
+        <LineFields d={d} set={(p) => setD((x) => ({ ...x, ...p }))} errors={errors} counterparties={counterparties} onCounterpartyAdded={onCounterpartyAdded} />
       </fieldset>
       {!locked && (
         <div className="lcard__foot">
@@ -200,7 +258,7 @@ function LineCard({ line, counterparties, locked }: { line: Line; counterparties
   );
 }
 
-function NewLine({ shipmentId, counterparties, onDone }: { shipmentId: number; counterparties: Counterparty[]; onDone: () => void }) {
+function NewLine({ shipmentId, counterparties, onDone, onCounterpartyAdded }: { shipmentId: number; counterparties: Counterparty[]; onDone: () => void; onCounterpartyAdded: (c: Counterparty) => void }) {
   const router = useRouter();
   const [d, setD] = useState<Draft>(emptyDraft("expense"));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -236,7 +294,7 @@ function NewLine({ shipmentId, counterparties, onDone }: { shipmentId: number; c
         </div>
       </div>
       <fieldset disabled={busy} className="lcard__fields">
-        <LineFields d={d} set={(p) => setD((x) => ({ ...x, ...p }))} errors={errors} counterparties={counterparties} />
+        <LineFields d={d} set={(p) => setD((x) => ({ ...x, ...p }))} errors={errors} counterparties={counterparties} onCounterpartyAdded={onCounterpartyAdded} />
       </fieldset>
       <div className="lcard__foot">
         <button type="button" className="btn" onClick={add} disabled={busy}>
@@ -251,17 +309,19 @@ function NewLine({ shipmentId, counterparties, onDone }: { shipmentId: number; c
   );
 }
 
-export default function LinesEditor({ shipmentId, lines, counterparties, locked }: { shipmentId: number; lines: Line[]; counterparties: Counterparty[]; locked: boolean }) {
+export default function LinesEditor({ shipmentId, lines, counterparties: initialCounterparties, locked }: { shipmentId: number; lines: Line[]; counterparties: Counterparty[]; locked: boolean }) {
   const [adding, setAdding] = useState(false);
+  const [counterparties, setCounterparties] = useState(initialCounterparties);
+  const addCounterparty = (c: Counterparty) => setCounterparties((list) => [...list.filter((x) => x.id !== c.id), c].sort((a, b) => a.name.localeCompare(b.name, "ru")));
   return (
     <div>
       {lines.length === 0 && !adding ? <p className="muted">Строк пока нет. Расходы можно вносить по мере поступления счетов.</p> : null}
       <ul className="llist">
         {lines.map((l) => (
-          <LineCard key={`${l.id}-${l.plannedAmount}-${l.actualAmount}-${l.paymentStatus}-${l.dueDate}-${l.paidAt}-${l.description}-${l.counterpartyId}-${l.isUnplanned}`} line={l} counterparties={counterparties} locked={locked} />
+          <LineCard key={`${l.id}-${l.plannedAmount}-${l.actualAmount}-${l.paymentStatus}-${l.dueDate}-${l.paidAt}-${l.description}-${l.counterpartyId}-${l.isUnplanned}`} line={l} counterparties={counterparties} locked={locked} onCounterpartyAdded={addCounterparty} />
         ))}
       </ul>
-      {!locked && (adding ? <NewLine shipmentId={shipmentId} counterparties={counterparties} onDone={() => setAdding(false)} /> : (
+      {!locked && (adding ? <NewLine shipmentId={shipmentId} counterparties={counterparties} onDone={() => setAdding(false)} onCounterpartyAdded={addCounterparty} /> : (
         <div className="sec-foot">
           <button type="button" className="btn btn--ghost" onClick={() => setAdding(true)}>
             + Добавить доход или расход
