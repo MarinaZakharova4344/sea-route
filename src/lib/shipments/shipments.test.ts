@@ -525,3 +525,28 @@ describe("два менеджера правят одну перевозку о�
     expect(svc.getShipment(db, id).cargoDescription).toBe("Одежда");
   });
 });
+
+describe("закрытие перевозки без дохода (забыли внести счёт клиенту)", () => {
+  it("система предупреждает и закрывает только после подтверждения; отменённую перевозку это не касается", () => {
+    const id = arrivedShipment();
+    svc.addLine(db, manager, id, { kind: "expense", description: "Фрахт", plannedAmount: 50_000, actualAmount: 52_000, paymentStatus: "paid", paidAmount: 52_000 }, T0);
+    try {
+      svc.closeFinance(db, manager, id, false, T0);
+      throw new Error("ожидалось предупреждение");
+    } catch (e) {
+      const err = e as { status?: number; details?: { code?: string } };
+      expect(err.status).toBe(409);
+      expect(err.details?.code).toBe("no_income");
+    }
+    expect(svc.getShipment(db, id).financeClosedAt).toBeNull();
+    svc.closeFinance(db, manager, id, false, T0, true);
+    expect(svc.getShipment(db, id).financeClosedAt).toBeTruthy();
+  });
+
+  it("с доходом закрывается как обычно", () => {
+    const id = arrivedShipment();
+    svc.addLine(db, manager, id, { kind: "income", description: "Счёт", plannedAmount: 80_000, actualAmount: 80_000, paymentStatus: "paid", paidAmount: 80_000 }, T0);
+    svc.addLine(db, manager, id, { kind: "expense", description: "Фрахт", plannedAmount: 50_000, actualAmount: 50_000, paymentStatus: "paid", paidAmount: 50_000 }, T0);
+    expect(() => svc.closeFinance(db, manager, id, false, T0)).not.toThrow();
+  });
+});

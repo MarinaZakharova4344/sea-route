@@ -89,7 +89,7 @@ export const LineCreate = LineInput.refine((v) => v.kind !== undefined, { messag
   { message: "Укажите, за что строка", path: ["description"] },
 );
 
-export const CloseFinanceInput = z.object({ confirmUnpaid: z.boolean().optional() }).strict();
+export const CloseFinanceInput = z.object({ confirmUnpaid: z.boolean().optional(), confirmNoIncome: z.boolean().optional() }).strict();
 
 export const ListQuery = z.object({
   status: z.enum([...SHIPMENT_STATUSES, "closed"]).optional(),

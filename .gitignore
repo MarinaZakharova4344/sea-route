@@ -8,6 +8,9 @@ next-env.d.ts
 data/*.db
 data/*.db-*
 
+# резервные копии базы (npm run db:backup)
+backups/
+
 .env
 .env.*
 !.env.example

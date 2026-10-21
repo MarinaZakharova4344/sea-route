@@ -11,5 +11,5 @@ export const POST = route<Ctx>(["manager"], async (request, user, ctx) => {
   const id = await idParam(ctx);
   const raw = await request.text();
   const body = raw ? await readJson(new Request(request.url, { method: "POST", body: raw }), CloseFinanceInput) : {};
-  return json(closeFinance(getDb(), user, id, body.confirmUnpaid === true));
+  return json(closeFinance(getDb(), user, id, body.confirmUnpaid === true, undefined, body.confirmNoIncome === true));
 });

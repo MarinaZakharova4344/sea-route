@@ -9,6 +9,7 @@ interface Props {
   status: string;
   clientId: string;
   attention: boolean;
+  mine: boolean;
   statuses: { value: string; label: string }[];
   clients: { id: number; name: string }[];
 }
@@ -18,14 +19,14 @@ interface Props {
  * последней набранной буквы. Страница не перезагружается и не прокручивается наверх; кнопка «Найти» остаётся
  * для тех, кто привык нажимать Enter.
  */
-export default function ListFilters({ q, status, clientId, attention, statuses, clients }: Props) {
+export default function ListFilters({ q, status, clientId, attention, mine, statuses, clients }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [v, setV] = useState({ q, status, clientId, attention });
+  const [v, setV] = useState({ q, status, clientId, attention, mine });
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Если адрес изменили снаружи (кнопка «Сбросить», «Назад» в браузере), показываем актуальные значения.
-  useEffect(() => setV({ q, status, clientId, attention }), [q, status, clientId, attention]);
+  useEffect(() => setV({ q, status, clientId, attention, mine }), [q, status, clientId, attention, mine]);
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
 
   function apply(next: typeof v) {
@@ -34,6 +35,7 @@ export default function ListFilters({ q, status, clientId, attention, statuses, 
     if (next.status) p.set("status", next.status);
     if (next.clientId) p.set("clientId", next.clientId);
     if (next.attention) p.set("attention", "any");
+    if (next.mine) p.set("mine", "1");
     const s = p.toString();
     startTransition(() => router.replace(s ? `/manager?${s}` : "/manager", { scroll: false }));
   }
@@ -46,7 +48,7 @@ export default function ListFilters({ q, status, clientId, attention, statuses, 
     else apply(next);
   }
 
-  const hasFilters = Boolean(v.q || v.status || v.clientId || v.attention);
+  const hasFilters = Boolean(v.q || v.status || v.clientId || v.attention || v.mine);
 
   return (
     <form
@@ -79,6 +81,10 @@ export default function ListFilters({ q, status, clientId, attention, statuses, 
       <label className="check-inline">
         <input type="checkbox" name="attention" checked={v.attention} onChange={(e) => change({ attention: e.target.checked })} />
         Требуют внимания
+      </label>
+      <label className="check-inline">
+        <input type="checkbox" name="mine" checked={v.mine} onChange={(e) => change({ mine: e.target.checked })} />
+        Только мои
       </label>
       <button className="btn btn--primary" type="submit" disabled={pending}>
         {pending ? "Ищем…" : "Найти"}

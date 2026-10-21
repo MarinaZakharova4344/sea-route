@@ -3,6 +3,7 @@ import { getDb } from "@/db";
 import StatusBadge from "@/components/shipment/StatusBadge";
 import ListFilters from "@/components/manager/ListFilters";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
+import { getCurrentUser } from "@/lib/auth/server";
 import { ensureFresh } from "@/lib/recalc";
 import { ListQuery } from "@/lib/shipments/schemas";
 import { listShipments, referenceData } from "@/lib/shipments/service";
@@ -20,10 +21,13 @@ function pick(sp: Record<string, string | string[] | undefined>, key: string): s
 export default async function ManagerHome({ searchParams }: { searchParams: Params }) {
   const sp = await searchParams;
   const db = getDb();
+  const user = await getCurrentUser();
+  const mine = pick(sp, "mine") === "1";
   const parsed = ListQuery.safeParse({
     q: pick(sp, "q"),
     status: pick(sp, "status"),
     clientId: pick(sp, "clientId"),
+    managerId: mine && user ? String(user.id) : undefined,
     attention: pick(sp, "attention") === "any" ? "any" : undefined,
     limit: PAGE,
     offset: pick(sp, "offset") ?? 0,
@@ -33,7 +37,7 @@ export default async function ManagerHome({ searchParams }: { searchParams: Para
   const result = listShipments(db, query);
   const ref = referenceData(db);
 
-  const filters = { q: query.q, status: query.status, clientId: query.clientId, attention: query.attention };
+  const filters = { q: query.q, status: query.status, clientId: query.clientId, attention: query.attention, mine: mine ? "1" : undefined };
   const link = (offset: number) => {
     const p = new URLSearchParams();
     for (const [k, v] of Object.entries(filters)) if (v) p.set(k, String(v));
@@ -65,6 +69,7 @@ export default async function ManagerHome({ searchParams }: { searchParams: Para
         status={query.status ?? ""}
         clientId={query.clientId ? String(query.clientId) : ""}
         attention={query.attention === "any"}
+        mine={mine}
         statuses={ref.statuses}
         clients={ref.clients as { id: number; name: string }[]}
       />

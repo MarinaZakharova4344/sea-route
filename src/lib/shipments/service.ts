@@ -628,7 +628,7 @@ export function deleteLine(db: Database.Database, user: AuthUser, id: number, no
 
 // ---------- финансовое закрытие ----------
 
-export function closeFinance(db: Database.Database, user: AuthUser, id: number, confirmUnpaid: boolean, now: Date = new Date()) {
+export function closeFinance(db: Database.Database, user: AuthUser, id: number, confirmUnpaid: boolean, now: Date = new Date(), confirmNoIncome = false) {
   const row = getRow(db, id);
   if (row.finance_closed_at) throw new ApiError(409, "Перевозка уже закрыта финансово");
   if (row.status !== "arrived" && row.status !== "cancelled") {
@@ -642,6 +642,10 @@ export function closeFinance(db: Database.Database, user: AuthUser, id: number, 
       code: "missing_actual",
       lines: noFact.map((l) => ({ id: l.id, description: l.description, kind: l.kind })),
     });
+  }
+  // Частая ошибка в ежедневной работе: перевозку закрыли, а счёт клиенту так и не внесли. Маржа получится отрицательной.
+  if (row.status !== "cancelled" && !confirmNoIncome && !lines.some((l) => l.kind === "income" && lineValue(l) > 0)) {
+    throw new ApiError(409, "В перевозке нет ни одной строки дохода: результат будет убытком. Если так и должно быть, подтвердите закрытие", { code: "no_income" });
   }
   const unpaid = lines.filter((l) => l.payment_status !== "paid");
   if (unpaid.length > 0 && !confirmUnpaid) {

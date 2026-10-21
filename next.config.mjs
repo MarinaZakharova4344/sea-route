@@ -8,6 +8,16 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // базовая защита всех страниц: запрет встраивания в чужие сайты и угадывания типа файлов
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "same-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+      {
         // service worker всегда проверяется заново, иначе обновления приложения не дойдут до устройств
         source: "/sw.js",
         headers: [
