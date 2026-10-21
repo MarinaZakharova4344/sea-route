@@ -66,7 +66,7 @@ export async function checkCredentials(
   if (isLocked(email, ip, now)) return { ok: false, reason: "locked" };
 
   const row = db
-    .prepare("SELECT id, email, name, role, password_hash FROM users WHERE lower(email) = ?")
+    .prepare("SELECT id, email, name, role, password_hash FROM users WHERE lower(email) = ? AND disabled_at IS NULL")
     .get(email) as (AuthUser & { password_hash: string }) | undefined;
 
   const match = await bcrypt.compare(password, row?.password_hash ?? DUMMY_HASH);

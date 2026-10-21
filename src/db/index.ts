@@ -12,9 +12,22 @@ export function openDb(file: string = process.env.DATABASE_PATH ?? DEFAULT_DB_PA
   return db;
 }
 
+/** Колонки, добавленные после первой версии схемы: для баз, созданных раньше (CREATE TABLE IF NOT EXISTS их не добавит). */
+const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
+  { table: "users", column: "disabled_at", ddl: "ALTER TABLE users ADD COLUMN disabled_at TEXT" },
+];
+
+function ensureColumns(db: Database.Database): void {
+  for (const c of ADDED_COLUMNS) {
+    const has = (db.prepare(`PRAGMA table_info(${c.table})`).all() as { name: string }[]).some((x) => x.name === c.column);
+    if (!has) db.exec(c.ddl);
+  }
+}
+
 export function applySchema(db: Database.Database): void {
   const sql = fs.readFileSync(path.join(process.cwd(), "src", "db", "schema.sql"), "utf8");
   db.exec(sql);
+  ensureColumns(db);
 }
 
 let shared: Database.Database | undefined;

@@ -24,8 +24,8 @@ export function json(body: unknown, status = 200, headers?: HeadersInit): Respon
 export async function getUserByToken(token: string | undefined, db: Database.Database = getDb()): Promise<AuthUser | null> {
   const id = await verifySession(token);
   if (id === null) return null;
-  // Роль берётся из базы, а не из токена: изменение роли или удаление пользователя действует сразу.
-  const row = db.prepare("SELECT id, email, name, role FROM users WHERE id = ?").get(id) as AuthUser | undefined;
+  // Роль берётся из базы, а не из токена: изменение роли, отключение или удаление пользователя действует сразу.
+  const row = db.prepare("SELECT id, email, name, role FROM users WHERE id = ? AND disabled_at IS NULL").get(id) as AuthUser | undefined;
   return row ?? null;
 }
 

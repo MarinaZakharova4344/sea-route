@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
   name          TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   role          TEXT NOT NULL CHECK (role IN ('manager', 'director')),
-  created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+  created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  disabled_at   TEXT
 );
 
 CREATE TABLE IF NOT EXISTS clients (
