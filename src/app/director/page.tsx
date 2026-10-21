@@ -10,6 +10,8 @@ import { STATUS_LABELS } from "@/lib/shipments/service";
 type Params = Promise<Record<string, string | string[] | undefined>>;
 
 const SHOWN = 6;
+const STEP = 20;
+const MAX = 200;
 
 export default async function Today({ searchParams }: { searchParams: Params }) {
   const sp = await searchParams;
@@ -17,8 +19,11 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
   const fresh = ensureFresh(db);
   const a = getAttention(db);
 
-  const showAll = sp.all === "1";
-  const items = showAll ? a.items : a.items.slice(0, SHOWN);
+  // Список растёт по 20 карточек («Показать ещё»), а не выводится целиком: в реальной базе их сотни.
+  const requested = Number(Array.isArray(sp.n) ? sp.n[0] : sp.n);
+  const shown = Number.isFinite(requested) ? Math.min(Math.max(Math.round(requested), SHOWN), MAX) : SHOWN;
+  const items = a.items.slice(0, shown);
+  const more = Math.min(STEP, a.items.length - items.length);
   const maxCount = Math.max(1, ...a.byReason.map((r) => r.count));
 
   return (
@@ -37,7 +42,10 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
           <span className="hero-card__value">{a.total}</span>
           <span className="hero-card__label">
             {plural(a.total, ["перевозка требует", "перевозки требуют", "перевозок требуют"])} вашего внимания
-            <small>из {a.activeShipments} в работе и ещё не закрытых финансово</small>
+            <small>
+              {a.total - a.closedWithDebt} из {a.activeShipments} в работе и ещё не закрытых финансово
+              {a.closedWithDebt > 0 && <>, плюс {a.closedWithDebt} закрытых с неоплаченными счетами</>}
+            </small>
           </span>
         </div>
 
@@ -116,13 +124,14 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
 
         {a.items.length > SHOWN && (
           <div className="more">
-            {showAll ? (
-              <Link href="/director" className="btn btn--ghost">
-                Свернуть
+            {more > 0 && (
+              <Link scroll={false} href={`/director?n=${items.length + more}`} className="btn btn--ghost">
+                Показать ещё {more} (показано {items.length} из {a.items.length})
               </Link>
-            ) : (
-              <Link href="/director?all=1" className="btn btn--ghost">
-                Показать все {a.items.length}
+            )}
+            {items.length > SHOWN && (
+              <Link scroll={false} href="/director" className="btn btn--ghost">
+                Свернуть
               </Link>
             )}
           </div>

@@ -94,6 +94,8 @@ export interface AttentionItem {
 
 export interface AttentionResult {
   total: number;
+  /** Из них закрытые финансово (или отменённые) перевозки, по которым остались долги по оплате. */
+  closedWithDebt: number;
   activeShipments: number;
   byReason: { code: ReasonCode; title: string; count: number }[];
   receivables: { count: number; amount: number };
@@ -150,8 +152,11 @@ export function getAttention(db: Database.Database, today: string = todayIso()):
 
   const active = (db.prepare("SELECT COUNT(*) AS n FROM shipments WHERE status IN ('booked', 'in_transit', 'arrived')").get() as { n: number }).n;
 
+  const closedWithDebt = items.filter((i) => i.status === "closed" || i.status === "cancelled").length;
+
   return {
     total: items.length,
+    closedWithDebt,
     activeShipments: active,
     byReason,
     receivables: { count: rec.n, amount: rec.amount },
