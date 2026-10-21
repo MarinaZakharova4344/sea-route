@@ -1094,3 +1094,27 @@ select.control option {
 .install-prompt--top {
   top: calc(12px + env(safe-area-inset-top));
 }
+
+/* ---------- Поля с датой на iPhone ---------- */
+/* Safari растягивает type="date" по своей внутренней ширине и выпускает поле за край карточки */
+.control[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 44px;
+  text-align: left;
+}
+
+.control[type="date"]::-webkit-date-and-time-value {
+  min-height: 1.3em;
+  margin: 0;
+  text-align: left;
+}
+
+.control[type="date"]::-webkit-calendar-picker-indicator {
+  margin-left: auto;
+}
