@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import InstallPrompt from "@/components/InstallPrompt";
+import ScrollMemory from "@/components/ScrollMemory";
 import RegisterSW from "@/components/RegisterSW";
 import "./globals.css";
 
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         {children}
+        <ScrollMemory />
         <InstallPrompt />
         <RegisterSW />
       </body>
