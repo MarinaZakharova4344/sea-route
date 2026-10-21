@@ -144,7 +144,7 @@ function LineFields({
       </Field>
       {adding && (
         <div className="inline-add field--wide">
-          <input className="control" placeholder="Название перевозчика или подрядчика" value={name} onChange={(e) => setName(e.target.value)} maxLength={200} autoFocus />
+          <input className="control" placeholder="Название перевозчика или подрядчика" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => (e.key === "Enter" ? (e.preventDefault(), addCounterparty()) : e.key === "Escape" && setAdding(false))} maxLength={200} autoFocus />
           <select className="control" value={type} onChange={(e) => setType(e.target.value)} aria-label="Вид подрядчика">
             {COUNTERPARTY_TYPES.map((t) => (
               <option key={t.value} value={t.value}>

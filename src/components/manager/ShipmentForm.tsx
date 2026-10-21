@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type KeyboardEvent } from "react";
 import { call } from "@/lib/client-api";
 import type { referenceData } from "@/lib/shipments/service";
 import Field from "./Field";
@@ -118,6 +118,16 @@ export default function ShipmentForm({
     }
   }
 
+  /** Enter в поле «нового клиента/направления» добавляет его, а не отправляет всю форму перевозки; Esc отменяет. */
+  const onInlineKey = (add: () => void) => (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      add();
+    } else if (e.key === "Escape") {
+      setAdding(null);
+    }
+  };
+
   async function addClient() {
     if (!newClient.trim()) return;
     const res = await call<{ id: number; name: string }>("POST", "/api/clients", { name: newClient });
@@ -184,7 +194,7 @@ export default function ShipmentForm({
 
           {adding === "client" && (
             <div className="inline-add field--wide">
-              <input className="control" placeholder="Название клиента" value={newClient} onChange={(e) => setNewClient(e.target.value)} autoFocus />
+              <input className="control" placeholder="Название клиента" value={newClient} onChange={(e) => setNewClient(e.target.value)} onKeyDown={onInlineKey(addClient)} autoFocus />
               <button type="button" className="btn" onClick={addClient}>
                 Добавить
               </button>
@@ -195,8 +205,8 @@ export default function ShipmentForm({
           )}
           {adding === "direction" && (
             <div className="inline-add field--wide">
-              <input className="control" placeholder="Порт отправления" value={newOrigin} onChange={(e) => setNewOrigin(e.target.value)} autoFocus />
-              <input className="control" placeholder="Порт назначения" value={newDestination} onChange={(e) => setNewDestination(e.target.value)} />
+              <input className="control" placeholder="Порт отправления" value={newOrigin} onChange={(e) => setNewOrigin(e.target.value)} onKeyDown={onInlineKey(addDirection)} autoFocus />
+              <input className="control" placeholder="Порт назначения" value={newDestination} onChange={(e) => setNewDestination(e.target.value)} onKeyDown={onInlineKey(addDirection)} />
               <button type="button" className="btn" onClick={addDirection}>
                 Добавить
               </button>
