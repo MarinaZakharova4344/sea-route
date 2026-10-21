@@ -35,6 +35,17 @@ export function getUserFromRequest(request: Request, db?: Database.Database): Pr
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
+/**
+ * Адрес клиента для ограничения попыток входа. Его передаёт прокси или туннель в заголовке X-Forwarded-For;
+ * без прокси адрес неизвестен (null), и ограничение считается только по e-mail.
+ */
+export function clientIp(request: Request): string | null {
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const real = request.headers.get("x-real-ip")?.trim();
+  const ip = forwarded || real || null;
+  return ip && ip.length <= 64 ? ip : null;
+}
+
 /** Защита от подделки запроса с чужого сайта: изменяющий запрос должен прийти с нашего адреса. */
 export function isForeignOrigin(request: Request): boolean {
   if (SAFE_METHODS.has(request.method)) return false;

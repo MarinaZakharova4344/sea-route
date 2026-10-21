@@ -111,11 +111,32 @@ describe("вход", () => {
     expect(res.status).toBe(400);
   });
 
-  it("после 5 неудачных попыток вход блокируется (429), даже с верным паролем", async () => {
-    for (let i = 0; i < 5; i++) expect((await login(MANAGER, "bad")).status).toBe(401);
+  it("без прокси (адрес клиента неизвестен): после 10 неудачных попыток вход блокируется (429), другой пользователь не затронут", async () => {
+    for (let i = 0; i < 10; i++) expect((await login(MANAGER, "bad")).status).toBe(401);
     expect((await login(MANAGER)).status).toBe(429);
-    // другой пользователь не затронут
     expect((await login(DIRECTOR)).status).toBe(200);
+  });
+
+  const loginFrom = (ip: string, email: string, password = PASSWORD) =>
+    loginRoute.POST(
+      new Request(`http://${HOST}/api/auth/login`, {
+        method: "POST",
+        headers: { host: HOST, "content-type": "application/json", "x-forwarded-for": ip },
+        body: JSON.stringify({ email, password }),
+      }),
+    );
+
+  it("посторонний с одного адреса не может закрыть вход руководителю: 5 неудач блокируют только его адрес", async () => {
+    for (let i = 0; i < 5; i++) expect((await loginFrom("203.0.113.7", DIRECTOR, "bad")).status).toBe(401);
+    expect((await loginFrom("203.0.113.7", DIRECTOR)).status).toBe(429);
+    // настоящий руководитель с другого адреса входит свободно
+    expect((await loginFrom("198.51.100.20", DIRECTOR)).status).toBe(200);
+  });
+
+  it("подбор по разным e-mail с одного адреса ограничен: после 20 неудач заблокирован весь адрес", async () => {
+    for (let i = 0; i < 20; i++) expect((await loginFrom("203.0.113.9", `user${i}@searoute.test`, "bad")).status).toBe(401);
+    expect((await loginFrom("203.0.113.9", MANAGER)).status).toBe(429);
+    expect((await loginFrom("198.51.100.21", MANAGER)).status).toBe(200);
   });
 
   it("выход очищает куку", async () => {
