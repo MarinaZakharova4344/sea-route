@@ -1,11 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useInstall } from "./install";
 
 /** «Позже» помним только, пока страница открыта: после перезагрузки или нового входа окно появляется снова. */
 let postponed = false;
+/** Страница уже загружена и показана: окно появляется только после этого, а не поверх пустого экрана. */
+let pageSeen = false;
 
 /**
  * Окно сверху с предложением установить приложение. Появляется, когда человек открыл сайт в браузере.
@@ -16,8 +18,30 @@ export default function InstallPrompt() {
   const [later, setLater] = useState(postponed);
   const [steps, setSteps] = useState(false);
   const onLogin = usePathname() === "/login";
+  const [ready, setReady] = useState(pageSeen);
 
-  if (installed || later || onLogin) return null;
+  // Ждём, пока на экране появится настоящая страница (шапка и содержимое, без заглушек загрузки), и ещё немного.
+  useEffect(() => {
+    if (onLogin) {
+      // Вышли из аккаунта: после следующего входа окно снова должно дождаться загрузки страницы.
+      pageSeen = false;
+      setReady(false);
+      return;
+    }
+    if (ready) return;
+    const t = setInterval(() => {
+      if (document.querySelector(".topbar") && document.querySelector("main.page") && !document.querySelector('[aria-busy="true"]')) {
+        clearInterval(t);
+        setTimeout(() => {
+          pageSeen = true;
+          setReady(true);
+        }, 1200);
+      }
+    }, 300);
+    return () => clearInterval(t);
+  }, [ready, onLogin]);
+
+  if (installed || later || onLogin || !ready) return null;
 
   const dismiss = () => {
     postponed = true;

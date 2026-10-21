@@ -1,13 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 export default function LoginForm() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // Пока страница не «ожила», кнопка неактивна: иначе браузер отправил бы форму обычным способом, а логин и пароль
+  // попали бы в адрес страницы.
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -27,19 +29,21 @@ export default function LoginForm() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data.error ?? "Не удалось войти");
+        setPending(false);
         return;
       }
-      router.replace("/");
-      router.refresh();
+      // Сразу в свой раздел обычной загрузкой страницы: форма с «Входим…» остаётся на экране, пока сервер готовит
+      // страницу, и пустого экрана посередине не бывает. Кнопка остаётся неактивной до самого перехода.
+      window.location.assign(data.user?.role === "director" ? "/director" : "/manager");
+      return;
     } catch {
       setError("Нет связи с сервером. Проверьте подключение и повторите");
-    } finally {
-      setPending(false);
     }
+    setPending(false);
   }
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={onSubmit} method="post" action="/login">
       <label className="field">
         <span className="field__label">E-mail</span>
         <input
@@ -94,7 +98,7 @@ export default function LoginForm() {
         </p>
       )}
 
-      <button type="submit" className="button" disabled={pending}>
+      <button type="submit" className="button" disabled={pending || !ready}>
         {pending ? "Входим…" : "Войти"}
       </button>
     </form>
