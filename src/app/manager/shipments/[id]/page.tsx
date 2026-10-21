@@ -1,4 +1,4 @@
-import Link from "next/link";
+import BackLink from "@/components/BackLink";
 import { notFound } from "next/navigation";
 import { getDb } from "@/db";
 import ContainersEditor from "@/components/manager/ContainersEditor";
@@ -28,9 +28,9 @@ export default async function ManagerShipment({ params }: { params: Promise<{ id
 
   return (
     <div className="mpage">
-      <Link href="/manager" className="back">
+      <BackLink href="/manager">
         ← Все перевозки
-      </Link>
+      </BackLink>
 
       <div className="mpage__head">
         <div>

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import BackLink from "@/components/BackLink";
 import { notFound } from "next/navigation";
 import { getDb } from "@/db";
 import ShipmentView from "@/components/ShipmentView";
@@ -19,9 +19,9 @@ export default async function DirectorShipment({ params }: { params: Promise<{ i
   }
   return (
     <>
-      <Link href="/director" className="back">
+      <BackLink href="/director">
         ← Назад
-      </Link>
+      </BackLink>
       <ShipmentView s={shipment} />
     </>
   );

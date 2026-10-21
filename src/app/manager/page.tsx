@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getDb } from "@/db";
 import StatusBadge from "@/components/StatusBadge";
+import ListFilters from "@/components/manager/ListFilters";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
 import { ensureFresh } from "@/lib/recalc";
 import { ListQuery } from "@/lib/shipments/schemas";
@@ -33,7 +34,6 @@ export default async function ManagerHome({ searchParams }: { searchParams: Para
   const ref = referenceData(db);
 
   const filters = { q: query.q, status: query.status, clientId: query.clientId, attention: query.attention };
-  const hasFilters = Object.values(filters).some(Boolean);
   const link = (offset: number) => {
     const p = new URLSearchParams();
     for (const [k, v] of Object.entries(filters)) if (v) p.set(k, String(v));
@@ -60,37 +60,14 @@ export default async function ManagerHome({ searchParams }: { searchParams: Para
       </div>
 
       <section className="panel panel--list">
-      <form className="toolbar" method="get" action="/manager">
-        <input className="control control--search" type="search" name="q" defaultValue={query.q ?? ""} placeholder="Номер, клиент или груз" aria-label="Поиск" />
-        <select className="control" name="status" defaultValue={query.status ?? ""} aria-label="Статус">
-          <option value="">Все статусы</option>
-          {ref.statuses.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-        <select className="control" name="clientId" defaultValue={query.clientId ?? ""} aria-label="Клиент">
-          <option value="">Все клиенты</option>
-          {(ref.clients as { id: number; name: string }[]).map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <label className="check-inline">
-          <input type="checkbox" name="attention" value="any" defaultChecked={query.attention === "any"} />
-          Требуют внимания
-        </label>
-        <button className="btn btn--primary" type="submit">
-          Найти
-        </button>
-        {hasFilters && (
-          <Link href="/manager" className="btn btn--ghost">
-            Сбросить
-          </Link>
-        )}
-      </form>
+      <ListFilters
+        q={query.q ?? ""}
+        status={query.status ?? ""}
+        clientId={query.clientId ? String(query.clientId) : ""}
+        attention={query.attention === "any"}
+        statuses={ref.statuses}
+        clients={ref.clients as { id: number; name: string }[]}
+      />
 
       {result.items.length === 0 ? (
         <div className="empty">

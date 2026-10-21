@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BackLink from "@/components/BackLink";
 import { notFound } from "next/navigation";
 import { getDb } from "@/db";
 import { getGroupDetail, type GroupBy } from "@/lib/analytics";
@@ -23,9 +24,9 @@ export default async function GroupPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <Link href={`/director/profit?days=${days}&by=${by}`} className="back">
+      <BackLink href={`/director/profit?days=${days}&by=${by}`}>
         ← К списку
-      </Link>
+      </BackLink>
       <header className="dhead">
         <h1>{d.name}</h1>
         <p>
