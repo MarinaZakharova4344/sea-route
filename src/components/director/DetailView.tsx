@@ -1,9 +1,42 @@
 import Link from "next/link";
 import BackLink from "@/components/layout/BackLink";
 import FreshnessBar from "./FreshnessBar";
-import type { DetailPage } from "@/lib/analytics-details";
+import type { DetailItem, DetailPage } from "@/lib/analytics-details";
 
 const TONE: Record<string, string> = { neg: "ditem__value--neg", pos: "ditem__value--pos", warn: "ditem__value--warn", muted: "ditem__value--muted" };
+
+
+/** Сколько строк группы показано сразу: в реальной базе их сотни, и страница должна открываться быстро. Остальное под «Показать ещё». */
+const SHOWN = 100;
+
+function renderItem(it: DetailItem, i: number) {
+  const body = (
+    <>
+      <span className="ditem__main">
+        <strong>{it.title}</strong>
+        {it.sub && <small>{it.sub}</small>}
+        {it.note && <small className="ditem__note">{it.note}</small>}
+      </span>
+      <span className={`ditem__value ${it.tone ? TONE[it.tone] : ""}`}>{it.valueText}</span>
+      {it.href && (
+        <span className="ditem__chev" aria-hidden="true">
+          ›
+        </span>
+      )}
+    </>
+  );
+  return (
+    <li key={`${it.shipmentId ?? it.title}-${i}`}>
+      {it.href ? (
+        <Link href={it.href} className="ditem ditem--link">
+          {body}
+        </Link>
+      ) : (
+        <div className="ditem">{body}</div>
+      )}
+    </li>
+  );
+}
 
 /** Страница подробностей к блоку: что это, из чего сложилось, что делать. Одинаковая для всех блоков. */
 export default function DetailView({
@@ -60,36 +93,15 @@ export default function DetailView({
               {g.totalText && <span className="dgroup__total">{g.totalText}</span>}
             </div>
             {g.sub && <p className="hint hint--top">{g.sub}</p>}
-            <ul className="ditems">
-              {g.items.map((it, i) => {
-                const body = (
-                  <>
-                    <span className="ditem__main">
-                      <strong>{it.title}</strong>
-                      {it.sub && <small>{it.sub}</small>}
-                      {it.note && <small className="ditem__note">{it.note}</small>}
-                    </span>
-                    <span className={`ditem__value ${it.tone ? TONE[it.tone] : ""}`}>{it.valueText}</span>
-                    {it.href && (
-                      <span className="ditem__chev" aria-hidden="true">
-                        ›
-                      </span>
-                    )}
-                  </>
-                );
-                return (
-                  <li key={`${it.shipmentId ?? it.title}-${i}`}>
-                    {it.href ? (
-                      <Link href={it.href} className="ditem ditem--link">
-                        {body}
-                      </Link>
-                    ) : (
-                      <div className="ditem">{body}</div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+            <ul className="ditems">{g.items.slice(0, SHOWN).map((it, i) => renderItem(it, i))}</ul>
+            {g.items.length > SHOWN && (
+              <details className="ditems-more">
+                <summary>
+                  Показать ещё {g.items.length - SHOWN} из {g.items.length}
+                </summary>
+                <ul className="ditems">{g.items.slice(SHOWN).map((it, i) => renderItem(it, SHOWN + i))}</ul>
+              </details>
+            )}
           </section>
         ))
       )}

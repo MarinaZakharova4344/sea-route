@@ -1441,3 +1441,23 @@ a.compare__col:hover {
   margin-top: 2px;
   color: #ffc37a;
 }
+
+
+.ditems-more {
+  margin-top: 10px;
+}
+
+.ditems-more > summary {
+  cursor: pointer;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #0a1242;
+  border: 1px solid rgba(169, 193, 232, 0.3);
+  font-weight: 600;
+  color: var(--link);
+  list-style: none;
+}
+
+.ditems-more[open] > summary {
+  margin-bottom: 10px;
+}
