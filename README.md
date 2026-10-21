@@ -88,6 +88,7 @@ npm run typecheck # проверка типов
 | [docs/decision-log.md](docs/decision-log.md) | Журнал решений: вопрос → варианты → предложение → ответ или допущение → что реализовано |
 | [docs/data-schema.md](docs/data-schema.md) | Схема базы данных |
 | [docs/demo-scenario.md](docs/demo-scenario.md) | Сценарий показа |
+| [docs/edge-cases.md](docs/edge-cases.md) | Три сложных случая, проверенные самостоятельно |
 | [docs/ai-usage.md](docs/ai-usage.md) | Примеры использования ИИ |
 | [docs/customer/](docs/customer/) | ТЗ и переписка с заказчиком |
 
