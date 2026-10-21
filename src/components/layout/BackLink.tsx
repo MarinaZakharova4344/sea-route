@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { previousIs, restoreScroll } from "./ScrollMemory";
+import { previousIs, restoreScroll } from "@/components/pwa/ScrollMemory";
 
 /**
  * Ссылка «Назад». Если предыдущая страница та же, куда она ведёт, работает как кнопка «Назад» в браузере

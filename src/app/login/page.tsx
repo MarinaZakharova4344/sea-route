@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser, homeFor } from "@/lib/auth/server";
-import Bubbles from "@/components/Bubbles";
-import BrandIcon from "@/components/BrandIcon";
+import Bubbles from "@/components/layout/Bubbles";
+import BrandIcon from "@/components/layout/BrandIcon";
 import LoginForm from "./LoginForm";
 
 export const dynamic = "force-dynamic";

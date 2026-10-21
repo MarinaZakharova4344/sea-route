@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getDb } from "@/db";
-import FreshnessBar from "@/components/FreshnessBar";
-import StatusBadge from "@/components/StatusBadge";
+import FreshnessBar from "@/components/director/FreshnessBar";
+import StatusBadge from "@/components/shipment/StatusBadge";
 import { REASON_TITLES, getAttention, type ReasonCode } from "@/lib/analytics";
 import { formatDate, formatMoney, formatMoneyShort } from "@/lib/format";
 import { ensureFresh } from "@/lib/recalc";

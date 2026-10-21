@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { getDb } from "@/db";
-import FreshnessBar from "@/components/FreshnessBar";
-import ColumnChart from "@/components/ColumnChart";
-import { Delta, DivergingBars, axisMoney } from "@/components/charts";
+import FreshnessBar from "@/components/director/FreshnessBar";
+import ColumnChart from "@/components/charts/ColumnChart";
+import { Delta, DivergingBars, axisMoney } from "@/components/charts/charts";
 import { getDynamics } from "@/lib/analytics";
 import { formatDate, formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
 import { ensureFresh } from "@/lib/recalc";

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import BackLink from "@/components/BackLink";
+import BackLink from "@/components/layout/BackLink";
 import FreshnessBar from "./FreshnessBar";
 import type { DetailPage } from "@/lib/analytics-details";
 

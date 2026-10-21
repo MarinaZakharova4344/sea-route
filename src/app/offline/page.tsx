@@ -1,4 +1,4 @@
-import BrandIcon from "@/components/BrandIcon";
+import BrandIcon from "@/components/layout/BrandIcon";
 
 export const metadata = { title: "Нет связи · Морской маршрут" };
 

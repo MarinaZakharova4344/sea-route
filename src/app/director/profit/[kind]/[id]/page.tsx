@@ -1,5 +1,5 @@
 import Link from "next/link";
-import BackLink from "@/components/BackLink";
+import BackLink from "@/components/layout/BackLink";
 import { notFound } from "next/navigation";
 import { getDb } from "@/db";
 import { getGroupDetail, type GroupBy } from "@/lib/analytics";

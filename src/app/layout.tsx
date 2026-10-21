@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import InstallPrompt from "@/components/InstallPrompt";
-import ScrollMemory from "@/components/ScrollMemory";
-import RegisterSW from "@/components/RegisterSW";
+import InstallPrompt from "@/components/pwa/InstallPrompt";
+import ScrollMemory from "@/components/pwa/ScrollMemory";
+import RegisterSW from "@/components/pwa/RegisterSW";
 import "./globals.css";
 
 export const metadata = {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import BrandIcon from "./BrandIcon";
-import ConnectionBanner from "./ConnectionBanner";
-import InstallButton from "./InstallButton";
+import ConnectionBanner from "@/components/pwa/ConnectionBanner";
+import InstallButton from "@/components/pwa/InstallButton";
 import { HeaderNav, TabBar, type NavItem } from "./nav";
 import LogoutButton from "@/app/LogoutButton";
 

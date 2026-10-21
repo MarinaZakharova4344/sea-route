@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getDb } from "@/db";
-import StatusBadge from "@/components/StatusBadge";
+import StatusBadge from "@/components/shipment/StatusBadge";
 import ListFilters from "@/components/manager/ListFilters";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
 import { ensureFresh } from "@/lib/recalc";

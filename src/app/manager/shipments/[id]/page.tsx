@@ -1,12 +1,12 @@
-import BackLink from "@/components/BackLink";
+import BackLink from "@/components/layout/BackLink";
 import { notFound } from "next/navigation";
 import { getDb } from "@/db";
 import ContainersEditor from "@/components/manager/ContainersEditor";
 import FinanceActions from "@/components/manager/FinanceActions";
 import LinesEditor from "@/components/manager/LinesEditor";
 import ShipmentForm from "@/components/manager/ShipmentForm";
-import { HistorySection, ResultSection } from "@/components/ShipmentSections";
-import StatusBadge from "@/components/StatusBadge";
+import { HistorySection, ResultSection } from "@/components/shipment/ShipmentSections";
+import StatusBadge from "@/components/shipment/StatusBadge";
 import { formatDateTime } from "@/lib/format";
 import { ensureFresh } from "@/lib/recalc";
 import { getShipment, referenceData } from "@/lib/shipments/service";

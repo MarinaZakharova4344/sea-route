@@ -1,7 +1,7 @@
-import BackLink from "@/components/BackLink";
+import BackLink from "@/components/layout/BackLink";
 import { notFound } from "next/navigation";
 import { getDb } from "@/db";
-import ShipmentView from "@/components/ShipmentView";
+import ShipmentView from "@/components/shipment/ShipmentView";
 import { ensureFresh } from "@/lib/recalc";
 import { getShipment } from "@/lib/shipments/service";
 

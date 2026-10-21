@@ -1,4 +1,4 @@
-import type { NavItem } from "@/components/nav";
+import type { NavItem } from "@/components/layout/nav";
 
 export const MANAGER_NAV: NavItem[] = [{ href: "/manager", label: "Перевозки", icon: "ship", match: ["/manager"] }];
 
