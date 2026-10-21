@@ -1012,3 +1012,80 @@ select.control option {
     animation: none;
   }
 }
+
+/* ---------- Окно «Установить приложение» ---------- */
+
+.install-prompt {
+  position: fixed;
+  top: calc(68px + env(safe-area-inset-top));
+  left: 50%;
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(560px, calc(100vw - 24px));
+  padding: 14px 16px;
+  transform: translateX(-50%);
+  border-radius: 16px;
+  background: #050a2e;
+  border: 1px solid rgba(169, 193, 232, 0.35);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  color: var(--ink);
+  animation: install-in 0.3s ease-out;
+}
+
+.install-prompt__icon {
+  flex: none;
+  border-radius: 10px;
+}
+
+.install-prompt__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.install-prompt__text strong {
+  font-size: 14.5px;
+  color: #fff;
+}
+
+.install-prompt__btns {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+@keyframes install-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -12px);
+  }
+}
+
+@media (max-width: 560px) {
+  .install-prompt {
+    flex-wrap: wrap;
+  }
+
+  .install-prompt__text {
+    flex: 1 1 calc(100% - 60px);
+  }
+
+  .install-prompt__btns {
+    width: 100%;
+  }
+
+  .install-prompt__btns .btn {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .install-prompt {
+    animation: none;
+  }
+}
