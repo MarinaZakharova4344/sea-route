@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
 import StatusBadge from "@/components/shipment/StatusBadge";
-import { REASON_TITLES, getAttention, type ReasonCode } from "@/lib/analytics";
+import { getAttention } from "@/lib/analytics";
 import { formatDate, formatMoney, formatMoneyShort } from "@/lib/format";
 import { ensureFresh } from "@/lib/recalc";
 import { STATUS_LABELS } from "@/lib/shipments/service";
@@ -17,18 +17,9 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
   const fresh = ensureFresh(db);
   const a = getAttention(db);
 
-  const reasonParam = typeof sp.reason === "string" ? sp.reason : undefined;
-  const reason = reasonParam && reasonParam in REASON_TITLES ? (reasonParam as ReasonCode) : undefined;
   const showAll = sp.all === "1";
-  const filtered = reason ? a.items.filter((i) => i.reasons.some((r) => r.code === reason)) : a.items;
-  const items = showAll ? filtered : filtered.slice(0, SHOWN);
+  const items = showAll ? a.items : a.items.slice(0, SHOWN);
   const maxCount = Math.max(1, ...a.byReason.map((r) => r.count));
-  const href = (extra: Record<string, string | undefined>) => {
-    const p = new URLSearchParams();
-    for (const [k, v] of Object.entries(extra)) if (v) p.set(k, v);
-    const s = p.toString();
-    return s ? `/director?${s}` : "/director";
-  };
 
   return (
     <>
@@ -78,12 +69,7 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
 
       <section aria-label="Перевозки, требующие внимания">
         <div className="section-head">
-          <h2>{reason ? `Причина: ${REASON_TITLES[reason].toLowerCase()}` : "Начните с этих перевозок"}</h2>
-          {reason && (
-            <Link href="/director" className="link">
-              Показать все причины
-            </Link>
-          )}
+          <h2>Начните с этих перевозок</h2>
         </div>
 
         {items.length === 0 ? (
@@ -128,15 +114,15 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
           </ul>
         )}
 
-        {filtered.length > SHOWN && (
+        {a.items.length > SHOWN && (
           <div className="more">
             {showAll ? (
-              <Link href={href({ reason })} className="btn btn--ghost">
+              <Link href="/director" className="btn btn--ghost">
                 Свернуть
               </Link>
             ) : (
-              <Link href={href({ reason, all: "1" })} className="btn btn--ghost">
-                Показать все {filtered.length}
+              <Link href="/director?all=1" className="btn btn--ghost">
+                Показать все {a.items.length}
               </Link>
             )}
           </div>
