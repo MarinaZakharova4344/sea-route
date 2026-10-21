@@ -1,10 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useInstall } from "./install";
 
-const KEY = "install-prompt-later";
+/** «Позже» помним только, пока страница открыта: после перезагрузки или нового входа окно появляется снова. */
+let postponed = false;
 
 /**
  * Окно сверху с предложением установить приложение. Появляется, когда человек открыл сайт в браузере.
@@ -12,24 +13,14 @@ const KEY = "install-prompt-later";
  */
 export default function InstallPrompt() {
   const { installed, canPrompt, ios, install } = useInstall();
-  const [later, setLater] = useState(true);
+  const [later, setLater] = useState(postponed);
   const [steps, setSteps] = useState(false);
   const onLogin = usePathname() === "/login";
-
-  useEffect(() => {
-    try {
-      setLater(sessionStorage.getItem(KEY) === "1");
-    } catch {
-      setLater(false);
-    }
-  }, []);
 
   if (installed || later || onLogin) return null;
 
   const dismiss = () => {
-    try {
-      sessionStorage.setItem(KEY, "1");
-    } catch {}
+    postponed = true;
     setLater(true);
   };
 
