@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getDb } from "@/db";
 import FreshnessBar from "@/components/FreshnessBar";
 import { RevenueMarginBars, SegmentedBar, VIZ } from "@/components/charts";
-import { getProfit, type GroupBy } from "@/lib/analytics";
+import { getPayments, getProfit, getStaleSummary, type GroupBy } from "@/lib/analytics";
 import { formatDate, formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
 import { ensureFresh } from "@/lib/recalc";
 
@@ -21,6 +21,8 @@ export default async function Profit({ searchParams }: { searchParams: Params })
   const db = getDb();
   const fresh = ensureFresh(db);
   const p = getProfit(db, days, by);
+  const pay = getPayments(db, days);
+  const stale = getStaleSummary(db);
   const maxRevenue = Math.max(1, ...p.groups.map((g) => g.revenue));
   const href = (d: number, b: GroupBy) => `/director/profit?days=${d}&by=${b}`;
 
@@ -35,6 +37,15 @@ export default async function Profit({ searchParams }: { searchParams: Params })
 
       <FreshnessBar refreshedAt={fresh.refreshedAt} everyMinutes={fresh.refreshEveryMinutes} />
 
+      {stale.stale > 0 && (
+        <Link href="/director/details/stale" className="warn-note">
+          <span aria-hidden="true">⚠</span>
+          <span>
+            {stale.stale} из {stale.active} активных перевозок не обновлялись больше {stale.days} дн.: показатели по ним могут быть неточными. <u>Какие именно</u>
+          </span>
+        </Link>
+      )}
+
       <div className="seg-control" role="tablist" aria-label="Период">
         {PERIODS.map((x) => (
           <Link scroll={false} key={x.days} href={href(x.days, by)} className={`seg-control__btn${x.days === days ? " seg-control__btn--on" : ""}`} aria-current={x.days === days ? "true" : undefined}>
@@ -45,6 +56,7 @@ export default async function Profit({ searchParams }: { searchParams: Params })
 
       <section className="hero-card" aria-label="Итог за период">
         <span className="hero-card__cap">Маржа по перевозкам</span>
+        <p className="hero-card__note">Не чистая прибыль компании: общие расходы и налоги не вычтены</p>
         <Link href={`/director/profit/details/margin?days=${days}`} className="hero-card__big hero-card__big--link">
           <span className={p.totals.margin < 0 ? "neg" : ""}>{formatMoneyShort(p.totals.margin)}</span>
           <span className="hero-card__pct">{formatPercent(p.totals.marginPct)} от оборота</span>
@@ -101,6 +113,17 @@ export default async function Profit({ searchParams }: { searchParams: Params })
             В работе ещё {p.inProgress.count} {p.inProgress.count === 1 ? "перевозка" : "перевозок"}: ожидаемая маржа по плану {formatMoneyShort(p.inProgress.expectedMargin)} (в итог не входит) ›
           </Link>
         </p>
+      </section>
+
+      <section aria-label="Оплаты клиентов">
+        <Link href={`/director/profit/details/payments?days=${days}`} className="pay-card">
+          <span className="pay-card__cap">Оплаты клиентов за период</span>
+          <strong className="pay-card__sum">{formatMoneyShort(pay.received)}</strong>
+          <span className="pay-card__sub">
+            {pay.lines} {pay.lines === 1 ? "оплата" : "оплат"} · считаются по дате прихода денег, это не прибыль
+          </span>
+          <em className="more-link">Какие оплаты ›</em>
+        </Link>
       </section>
 
       <section aria-label="Клиенты и направления">

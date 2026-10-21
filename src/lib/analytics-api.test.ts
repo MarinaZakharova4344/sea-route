@@ -67,6 +67,7 @@ describe("API подробностей: только для руководите
     ["attentionDetail", "receivables"],
     ["attentionDetail", "overrun"],
     ["profitDetail", "margin"],
+    ["profitDetail", "payments"],
     ["dynamicsDetail", "rate"],
   ];
 

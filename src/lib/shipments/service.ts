@@ -459,6 +459,8 @@ function normalizePayment(l: LineRow, today: string): void {
     l.paid_at = l.paid_at ?? today;
   } else {
     if (l.paid_amount <= 0 || l.paid_amount >= value) fieldError("paidAmount", "При частичной оплате сумма должна быть больше нуля и меньше суммы строки");
+    // Дата последней оплаты нужна, чтобы деньги попали в «Оплаты клиентов» нужного периода.
+    l.paid_at = l.paid_at ?? today;
   }
 }
 

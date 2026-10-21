@@ -160,6 +160,18 @@ export function getAttention(db: Database.Database, today: string = todayIso()):
   };
 }
 
+/** Сколько активных перевозок давно не обновлялись: показатели по ним могут быть неточными. */
+export function getStaleSummary(db: Database.Database): { stale: number; active: number; days: number } {
+  const days = loadThresholds(db).staleDays;
+  const r = db
+    .prepare(
+      `SELECT COUNT(*) AS active, COALESCE(SUM(CASE WHEN m.attention_reasons LIKE '%"code":"stale"%' THEN 1 ELSE 0 END), 0) AS stale
+       FROM shipments s JOIN shipment_metrics m ON m.shipment_id = s.id WHERE s.status IN ('booked', 'in_transit', 'arrived') AND s.finance_closed_at IS NULL`,
+    )
+    .get() as { active: number; stale: number };
+  return { stale: r.stale, active: r.active, days };
+}
+
 // ---------- «Доходность»: клиенты и направления ----------
 
 export type GroupBy = "client" | "direction";
@@ -297,6 +309,32 @@ export function getProfit(db: Database.Database, days: number, groupBy: GroupBy,
     .get() as { n: number; margin: number };
 
   return { from, to: today, days, groupBy, totals, groups, inProgress: { count: inProg.n, expectedMargin: inProg.margin } };
+}
+
+export interface PaymentsResult {
+  from: string;
+  to: string;
+  /** Сколько денег пришло от клиентов в периоде (по дате оплаты, а не доставки). */
+  received: number;
+  lines: number;
+  shipments: number;
+}
+
+/**
+ * Оплаты клиентов за период. Считаются по дате поступления денег (paid_at) и не зависят от даты доставки:
+ * перевозка, доставленная в октябре и оплаченная в ноябре, попадает в маржу октября и в оплаты ноября.
+ * Сумма оплаты строки: paid_amount. Частичная оплата без даты в период не попадает.
+ */
+export function getPayments(db: Database.Database, days: number, today: string = todayIso()): PaymentsResult {
+  const from = addDaysIso(today, -(days - 1));
+  const r = db
+    .prepare(
+      `SELECT COUNT(*) AS lines, COUNT(DISTINCT f.shipment_id) AS shipments, COALESCE(SUM(f.paid_amount), 0) AS received
+       FROM finance_lines f JOIN shipments s ON s.id = f.shipment_id
+       WHERE f.kind = 'income' AND f.paid_amount > 0 AND f.paid_at BETWEEN ? AND ? AND s.status <> 'draft'`,
+    )
+    .get(from, today) as { lines: number; shipments: number; received: number };
+  return { from, to: today, ...r };
 }
 
 export interface GroupDetail {

@@ -10,6 +10,7 @@ import {
   addDaysIso,
   deliveredIn,
   directionName,
+  getPayments,
   getProfit,
   isProblem,
   totalsOf,
@@ -346,7 +347,7 @@ export function getAttentionDetail(db: Database.Database, kind: AttentionKind, t
 
 // ---------- «Доходность»: что стоит за цифрами периода ----------
 
-export const PROFIT_METRICS = ["revenue", "cost", "margin", "shipments", "problems", "final", "preliminary", "inprogress"] as const;
+export const PROFIT_METRICS = ["revenue", "cost", "margin", "shipments", "problems", "final", "preliminary", "inprogress", "payments"] as const;
 export type ProfitMetric = (typeof PROFIT_METRICS)[number];
 
 function shipmentItem(r: MetricRow, valueText: string, tone?: DetailItem["tone"], note?: string): DetailItem {
@@ -470,6 +471,38 @@ export function getProfitDetail(db: Database.Database, days: number, metric: Pro
         [{ title: "Ждут закрытия", items: [...list].sort((a, b) => b.margin - a.margin).map((r) => shipmentItem(r, formatMoney(r.margin) + " *", r.margin < 0 ? "neg" : undefined, r.status === "arrived" ? "груз прибыл, расчёты не закрыты" : undefined)) }],
         "Все перевозки периода закрыты финансово.",
         "Попросить менеджеров внести фактические суммы и закрыть перевозки финансово",
+      );
+    }
+    case "payments": {
+      const pay = getPayments(db, days, today);
+      const lines = db
+        .prepare(
+          `SELECT f.description, f.paid_amount, f.actual_amount, f.paid_at, f.payment_status, s.id AS shipment_id, s.number, s.actual_arrival,
+                  c.name AS client_name
+           FROM finance_lines f JOIN shipments s ON s.id = f.shipment_id LEFT JOIN clients c ON c.id = s.client_id
+           WHERE f.kind = 'income' AND f.paid_amount > 0 AND f.paid_at BETWEEN ? AND ? AND s.status <> 'draft'
+           ORDER BY f.paid_at DESC, f.id DESC`,
+        )
+        .all(pay.from, pay.to) as { description: string; paid_amount: number; actual_amount: number | null; paid_at: string; payment_status: string; shipment_id: number; number: string; actual_arrival: string | null; client_name: string | null }[];
+      return base(
+        "Оплаты клиентов",
+        `Сколько денег пришло от клиентов в периоде ${period}. Считается по дате оплаты, а не по дате доставки: перевозка, доставленная раньше и оплаченная сейчас, попадает сюда, но не в маржу этого периода. Это движение денег, а не прибыль.`,
+        [{ label: "Поступило", value: formatMoney(pay.received) }, { label: "Оплат", value: String(pay.lines) }, { label: "Перевозок", value: String(pay.shipments) }],
+        [
+          {
+            title: "От последних к более давним",
+            items: lines.map<DetailItem>((l) => ({
+              shipmentId: l.shipment_id,
+              href: shipmentHref(l.shipment_id),
+              title: `${l.number} · ${l.client_name ?? "Клиент не указан"}`,
+              sub: `${l.description}, оплачено ${formatDate(l.paid_at)}`,
+              note: l.payment_status === "partial" ? `Оплата частичная (из ${formatMoney(l.actual_amount ?? 0)})` : l.actual_arrival ? `Груз доставлен ${formatDate(l.actual_arrival)}` : undefined,
+              valueText: formatMoney(l.paid_amount),
+              tone: "pos",
+            })),
+          },
+        ],
+        "За период оплат от клиентов не было.",
       );
     }
     default: {

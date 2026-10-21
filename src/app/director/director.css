@@ -1385,3 +1385,53 @@ a.compare__col:hover {
 .ditem--link:hover .ditem__chev {
   color: #fff;
 }
+
+/* ---------- Оплаты клиентов, пояснение к марже, предупреждение об устаревших данных ---------- */
+
+.pay-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: #050a2e;
+  border: 1px solid rgba(169, 193, 232, 0.28);
+  color: var(--ink);
+}
+
+.pay-card__cap {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #93a8c8;
+}
+
+.pay-card__sum {
+  font-size: 26px;
+  color: #fff;
+}
+
+.pay-card__sub {
+  font-size: 13px;
+  color: #c4d0ec;
+}
+
+.hero-card__note {
+  margin: 2px 0 8px;
+  font-size: 13px;
+  color: #ffc37a;
+}
+
+.warn-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border-left: 3px solid #ff9f4a;
+  background: #1f1d30;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: #ffd9b0;
+}
