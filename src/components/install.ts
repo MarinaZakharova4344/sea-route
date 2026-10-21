@@ -7,40 +7,33 @@ interface InstallEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+declare global {
+  interface Window {
+    /** Событие установки, перехваченное скриптом в <head> (см. app/layout.tsx). */
+    __installEvent?: InstallEvent | null;
+    __installed?: boolean;
+  }
+}
+
 /**
  * Общее состояние установки для кнопки в шапке и всплывающего окна.
- * Браузер присылает событие beforeinstallprompt один раз, поэтому его хранит один общий модуль.
+ * Само событие beforeinstallprompt перехватывает маленький скрипт в <head> страницы: браузер присылает его один раз
+ * при загрузке сайта, ещё до входа в систему, и позже его уже не повторит.
  */
-let deferred: InstallEvent | null = null;
-let installedFlag = false;
-let started = false;
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
-
-function start() {
-  if (started || typeof window === "undefined") return;
-  started = true;
-  installedFlag = isStandalone();
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferred = e as InstallEvent;
-    emit();
-  });
-  window.addEventListener("appinstalled", () => {
-    installedFlag = true;
-    deferred = null;
-    emit();
-  });
-}
 
 function isStandalone(): boolean {
   return window.matchMedia("(display-mode: standalone)").matches || (navigator as unknown as { standalone?: boolean }).standalone === true;
 }
 
 const subscribe = (l: () => void) => {
-  start();
   listeners.add(l);
-  return () => void listeners.delete(l);
+  window.addEventListener("install-state", emit);
+  return () => {
+    listeners.delete(l);
+    window.removeEventListener("install-state", emit);
+  };
 };
 
 export interface InstallState {
@@ -54,8 +47,8 @@ export interface InstallState {
 }
 
 export function useInstall(): InstallState {
-  const hasEvent = useSyncExternalStore(subscribe, () => deferred !== null, () => false);
-  const installed = useSyncExternalStore(subscribe, () => installedFlag, () => false);
+  const hasEvent = useSyncExternalStore(subscribe, () => Boolean(window.__installEvent), () => false);
+  const installed = useSyncExternalStore(subscribe, () => Boolean(window.__installed) || isStandalone(), () => false);
   const [ios, setIos] = useState(false);
   useEffect(() => setIos(/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone()), []);
 
@@ -64,9 +57,9 @@ export function useInstall(): InstallState {
     canPrompt: hasEvent,
     ios,
     async install() {
-      if (!deferred) return;
-      const e = deferred;
-      deferred = null;
+      const e = window.__installEvent;
+      if (!e) return;
+      window.__installEvent = null;
       emit();
       await e.prompt();
       await e.userChoice;

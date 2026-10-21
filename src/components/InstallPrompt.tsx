@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useInstall } from "./install";
 
@@ -13,6 +14,7 @@ export default function InstallPrompt() {
   const { installed, canPrompt, ios, install } = useInstall();
   const [later, setLater] = useState(true);
   const [steps, setSteps] = useState(false);
+  const noHeader = usePathname() === "/login";
 
   useEffect(() => {
     try {
@@ -32,7 +34,7 @@ export default function InstallPrompt() {
   };
 
   return (
-    <div className="install-prompt" role="dialog" aria-label="Установка приложения">
+    <div className={`install-prompt${noHeader ? " install-prompt--top" : ""}`} role="dialog" aria-label="Установка приложения">
       <img src="/icons/icon-192.png" alt="" width="44" height="44" className="install-prompt__icon" />
       <div className="install-prompt__text">
         <strong>Установить «Морской маршрут»?</strong>

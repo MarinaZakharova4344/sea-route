@@ -1089,3 +1089,8 @@ select.control option {
     animation: none;
   }
 }
+
+/* На странице входа шапки нет: окно установки прижато к верху */
+.install-prompt--top {
+  top: calc(12px + env(safe-area-inset-top));
+}

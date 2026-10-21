@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import InstallPrompt from "@/components/InstallPrompt";
 import RegisterSW from "@/components/RegisterSW";
 import "./globals.css";
 
@@ -20,6 +21,9 @@ export const viewport = {
   themeColor: "#0a1a45",
 };
 
+const INSTALL_CAPTURE =
+  "window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__installEvent=e;window.dispatchEvent(new Event('install-state'))});window.addEventListener('appinstalled',function(){window.__installEvent=null;window.__installed=true;window.dispatchEvent(new Event('install-state'))})";
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ru">
@@ -28,9 +32,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           // Только для режима разработки: Safari на iPhone бросает TypeError в performance.measure, который вызывает сам React.
           <script dangerouslySetInnerHTML={{ __html: "(function(){var m=window.performance&&performance.measure;if(!m)return;performance.measure=function(){try{return m.apply(this,arguments)}catch(e){}}})()" }} />
         )}
+        {/* Браузер присылает событие установки один раз при загрузке сайта, раньше входа и запуска React: перехватываем его сразу. */}
+        <script dangerouslySetInnerHTML={{ __html: INSTALL_CAPTURE }} />
       </head>
       <body>
         {children}
+        <InstallPrompt />
         <RegisterSW />
       </body>
     </html>

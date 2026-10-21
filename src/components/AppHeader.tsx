@@ -2,7 +2,6 @@ import Link from "next/link";
 import BrandIcon from "./BrandIcon";
 import ConnectionBanner from "./ConnectionBanner";
 import InstallButton from "./InstallButton";
-import InstallPrompt from "./InstallPrompt";
 import { HeaderNav, TabBar, type NavItem } from "./nav";
 import LogoutButton from "@/app/LogoutButton";
 
@@ -40,7 +39,6 @@ export default function AppHeader({
           </div>
         </div>
       </header>
-      <InstallPrompt />
       <ConnectionBanner renderedAt={new Date().toISOString()} />
       <TabBar items={nav} />
     </>
