@@ -1,9 +1,9 @@
 :root {
   /* Цвета сняты с референса */
   --ink: #e8f4fc;
-  --ink-soft: #97a4ca;
+  --ink-soft: #b5c0e0;
   --ink-label: #d4e4f8;
-  --ink-faint: #8794b1;
+  --ink-faint: #a0abc8;
   --line: rgba(200, 205, 240, 0.33);
   --accent: #4a99c9;
   --accent-strong: #22629c;
@@ -593,7 +593,7 @@ body {
 .offline p {
   max-width: 420px;
   margin: 0;
-  color: #97a4ca;
+  color: #b5c0e0;
 }
 
 .offline__hint {

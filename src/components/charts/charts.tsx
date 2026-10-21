@@ -20,7 +20,7 @@ export const VIZ = {
   grid: "rgba(169, 193, 232, 0.12)",
   axis: "rgba(169, 193, 232, 0.35)",
   ink2: "#c4d0ec",
-  ink3: "#93A8C8",
+  ink3: "#b4c4de",
   negative: "#FF8A7A",
   /** акцент графика динамики: оранжевый */
   accent: "#FF9F4A",
