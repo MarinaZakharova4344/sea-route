@@ -358,6 +358,7 @@ export interface GroupDetail {
     overrunPct: number;
     reasons: string[];
     isProblem: boolean;
+    problems: string[];
   }[];
 }
 
@@ -400,6 +401,12 @@ export function getGroupDetail(db: Database.Database, groupBy: GroupBy, id: numb
       overrunPct: r.overrun_pct,
       reasons: (JSON.parse(r.reasons) as { text: string }[]).map((x) => x.text),
       isProblem: isProblem(r, t),
+      /** Что именно не так, словами: нужно и у закрытых перевозок, у которых текущих причин внимания уже нет. */
+      problems: [
+        ...(r.delay_days > t.delayDays ? [`Опоздание ${r.delay_days} дн.`] : []),
+        ...(r.overrun_pct > t.overrunPct ? [`Перерасход ${r.overrun_pct} % от плана`] : []),
+        ...(r.has_overdue_payment === 1 ? ["Просрочена оплата"] : []),
+      ],
     })),
   };
 }

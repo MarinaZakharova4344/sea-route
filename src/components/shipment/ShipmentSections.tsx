@@ -1,8 +1,11 @@
 import "@/app/shipment-view.css";
-import { formatDateTime, formatMoney } from "@/lib/format";
+import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
 import type { getShipment } from "@/lib/shipments/service";
 
 type Shipment = ReturnType<typeof getShipment>;
+
+/** В истории даты хранятся как 2026-10-21; на экране показываем 21.10.2026, как везде. */
+const shown = (v: string | null) => (v === null ? "—" : /^\d{4}-\d{2}-\d{2}$/.test(v) ? formatDate(v) : v);
 
 /** Блок «Результат»: доход, расходы, маржа, пометки и причины внимания. */
 export function ResultSection({ s }: { s: Shipment }) {
@@ -65,7 +68,7 @@ export function HistorySection({ s }: { s: Shipment }) {
                   <strong>{c.field}</strong>
                   {c.oldValue !== null || c.newValue !== null ? (
                     <>
-                      : {c.oldValue ?? "—"} → {c.newValue ?? "—"}
+                      : {shown(c.oldValue)} → {shown(c.newValue)}
                     </>
                   ) : null}
                 </span>

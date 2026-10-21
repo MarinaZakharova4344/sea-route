@@ -42,7 +42,9 @@ const ICONS: Record<NavItem["icon"], ReactNode> = {
 };
 
 function matches(pathname: string, item: NavItem): boolean {
-  return item.match.some((m) => (m === item.href ? pathname === m : pathname.startsWith(m)));
+  // Корень раздела ("/director", "/manager") сопоставляется точно, иначе подсвечивалась бы любая его страница;
+  // остальные адреса: сама страница и всё, что внутри неё (страница клиента, подробности).
+  return item.match.some((m) => (m.split("/").length <= 2 ? pathname === m : pathname === m || pathname.startsWith(m + "/")));
 }
 
 /**

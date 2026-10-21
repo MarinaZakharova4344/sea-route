@@ -95,16 +95,15 @@ export default async function GroupPage({ params, searchParams }: Props) {
                   <div className="cell-sub">
                     доставлена {formatDate(s.resultDate)} · оборот {formatMoney(s.revenue)}
                   </div>
-                  {s.reasons.length > 0 && (
+                  {(s.reasons.length > 0 ? s.reasons : s.problems).length > 0 && (
                     <div className="chips attn__chips">
-                      {s.reasons.map((r) => (
+                      {(s.reasons.length > 0 ? s.reasons : s.problems).map((r) => (
                         <span key={r} className="chip">
                           {r}
                         </span>
                       ))}
                     </div>
                   )}
-                  {s.isProblem && s.reasons.length === 0 && <p className="muted">Проблемная: опоздание, перерасход или просроченная оплата.</p>}
                 </Link>
               </li>
             ))}
