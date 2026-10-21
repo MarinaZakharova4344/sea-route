@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { onTrailChange, previousPages } from "@/components/pwa/ScrollMemory";
 
 export interface NavItem {
   href: string;
@@ -40,18 +41,37 @@ const ICONS: Record<NavItem["icon"], ReactNode> = {
   ),
 };
 
-function isActive(pathname: string, item: NavItem): boolean {
+function matches(pathname: string, item: NavItem): boolean {
   return item.match.some((m) => (m === item.href ? pathname === m : pathname.startsWith(m)));
+}
+
+/**
+ * Какая вкладка подсвечена. Карточка перевозки открывается из любого экрана, поэтому подсвечивается вкладка,
+ * из которой человек пришёл (по умолчанию «Сегодня» для руководителя).
+ */
+function isActive(pathname: string, item: NavItem, items: NavItem[]): boolean {
+  if (pathname.startsWith("/director/shipments/")) {
+    const from = previousPages().find((p) => !p.startsWith("/director/shipments/") && items.some((i) => matches(p.split("?")[0], i)));
+    if (from) return matches(from.split("?")[0], item);
+  }
+  return matches(pathname, item);
+}
+
+/** Перерисовывает панель, когда обновился «след» переходов: он дописывается чуть позже, чем отрисована новая страница. */
+function useRefreshOnTrailChange() {
+  const [, force] = useState(0);
+  useEffect(() => onTrailChange(() => force((n) => n + 1)), []);
 }
 
 /** Навигация в шапке (компьютер). */
 export function HeaderNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname() ?? "";
+  useRefreshOnTrailChange();
   if (items.length < 2) return null;
   return (
     <nav className="topbar__nav" aria-label="Разделы">
       {items.map((i) => (
-        <Link key={i.href} href={i.href} aria-current={isActive(pathname, i) ? "page" : undefined}>
+        <Link key={i.href} href={i.href} aria-current={isActive(pathname, i, items) ? "page" : undefined}>
           {i.label}
         </Link>
       ))}
@@ -62,11 +82,12 @@ export function HeaderNav({ items }: { items: NavItem[] }) {
 /** Нижняя панель вкладок (телефон). */
 export function TabBar({ items }: { items: NavItem[] }) {
   const pathname = usePathname() ?? "";
+  useRefreshOnTrailChange();
   if (items.length < 2) return null;
   return (
     <nav className="tabbar" aria-label="Разделы">
       {items.map((i) => {
-        const active = isActive(pathname, i);
+        const active = isActive(pathname, i, items);
         return (
           <Link key={i.href} href={i.href} className={active ? "tabbar__tab tabbar__tab--on" : "tabbar__tab"} aria-current={active ? "page" : undefined}>
             {ICONS[i.icon]}

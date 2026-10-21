@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { previousIs, restoreScroll } from "@/components/pwa/ScrollMemory";
+import { hasPreviousPage, restoreScroll } from "@/components/pwa/ScrollMemory";
 
 /**
- * Ссылка «Назад». Если предыдущая страница та же, куда она ведёт, работает как кнопка «Назад» в браузере
- * и возвращает на то место списка, где человек был. Иначе просто открывает нужную страницу (и тоже возвращает
- * на запомненное место, если оно есть).
+ * Ссылка «Назад». Если человек пришёл с другой страницы приложения, она работает как кнопка «Назад» в браузере:
+ * возвращает туда, откуда он пришёл (например, в «Динамику»), на то же место страницы. Если страницу открыли напрямую,
+ * ведёт на `href`.
  */
 export default function BackLink({ href, className = "back", children }: { href: string; className?: string; children: ReactNode }) {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function BackLink({ href, className = "back", children }: { href:
       className={className}
       onClick={(e) => {
         e.preventDefault();
-        if (previousIs(href)) {
+        if (hasPreviousPage()) {
           router.back();
         } else {
           router.push(href);

@@ -991,9 +991,11 @@ select.control option {
 
 .toast__icon {
   display: grid;
+  flex: none;
   place-items: center;
   width: 22px;
   height: 22px;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: #2f9d73;
   color: #fff;

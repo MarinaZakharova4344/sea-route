@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 /**
  * Запоминает, докуда пользователь долистал каждую страницу, и возвращает его на это место,
@@ -12,6 +13,8 @@ const KEY = "scroll-memory";
 /** Адреса страниц, с которых пользователь перешёл на текущую (последний — предыдущая страница). */
 const trail: string[] = [];
 let restoring = false;
+/** Идёт переход «назад» средствами браузера: смену адреса не нужно записывать в след как переход вперёд. */
+let popping = false;
 let installed = false;
 
 const here = () => window.location.pathname + window.location.search;
@@ -54,13 +57,29 @@ export function restoreScroll(url: string) {
   step();
 }
 
-/** Была ли предыдущая страница именно этой (тогда «Назад» вернёт на неё с нужным местом). */
-export function previousIs(path: string): boolean {
+/** Есть ли внутри приложения страница, на которую можно вернуться (а не вход или чужой сайт). */
+export function hasPreviousPage(): boolean {
   const prev = trail[trail.length - 1];
-  return prev !== undefined && prev.split("?")[0] === path.split("?")[0];
+  return prev !== undefined && !prev.startsWith("/login");
+}
+
+const trailListeners = new Set<() => void>();
+
+/** Подписка на изменение «следа» переходов (чтобы нижняя панель перечитала, откуда пришёл человек). */
+export function onTrailChange(fn: () => void): () => void {
+  trailListeners.add(fn);
+  return () => void trailListeners.delete(fn);
+}
+
+/** Страницы, на которых человек был до этой, от последней к первой. Нужна, чтобы подсветить вкладку, откуда он пришёл. */
+export function previousPages(): string[] {
+  return [...trail].reverse();
 }
 
 export default function ScrollMemory() {
+  const pathname = usePathname();
+  const previous = useRef<string | null>(null);
+
   useEffect(() => {
     if (installed) return;
     installed = true;
@@ -80,19 +99,27 @@ export default function ScrollMemory() {
       { passive: true },
     );
 
-    // Переходы вперёд: запоминаем, откуда ушли.
-    const push = history.pushState.bind(history);
-    history.pushState = (...args: Parameters<History["pushState"]>) => {
-      trail.push(here());
-      return push(...args);
-    };
-
     // Назад и вперёд средствами браузера.
     window.addEventListener("popstate", () => {
       trail.pop();
+      trailListeners.forEach((fn) => fn());
+      popping = true;
+      setTimeout(() => (popping = false), 1500);
       restoreScroll(here());
     });
   }, []);
+
+  // Переходы вперёд: когда меняется страница, запоминаем, откуда пришли.
+  useEffect(() => {
+    const url = here();
+    const before = previous.current;
+    if (before !== null && before.split("?")[0] !== pathname) {
+      if (popping) popping = false;
+      else trail.push(before);
+    }
+    previous.current = url;
+    trailListeners.forEach((fn) => fn());
+  }, [pathname]);
 
   return null;
 }
