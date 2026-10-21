@@ -66,6 +66,23 @@ describe("вход", () => {
     expect(cookie).toContain("SameSite=Lax");
   });
 
+  it("флаг Secure только на защищённом соединении: по http (телефон в локальной сети) кука должна сохраняться", async () => {
+    const plain = (await login(MANAGER)).headers.get("set-cookie") ?? "";
+    expect(plain).not.toContain("Secure");
+    const viaTunnel = new Request(`http://${HOST}/api/auth/login`, {
+      method: "POST",
+      headers: { host: HOST, "content-type": "application/json", "x-forwarded-proto": "https" },
+      body: JSON.stringify({ email: MANAGER, password: PASSWORD }),
+    });
+    expect((await loginRoute.POST(viaTunnel)).headers.get("set-cookie") ?? "").toContain("Secure");
+    const direct = new Request(`https://${HOST}/api/auth/login`, {
+      method: "POST",
+      headers: { host: HOST, "content-type": "application/json" },
+      body: JSON.stringify({ email: MANAGER, password: PASSWORD }),
+    });
+    expect((await loginRoute.POST(direct)).headers.get("set-cookie") ?? "").toContain("Secure");
+  });
+
   it("без «запомнить меня» кука сессионная (без срока), с ним живёт 30 дней", async () => {
     const plain = (await login(MANAGER)).headers.get("set-cookie") ?? "";
     expect(plain).not.toContain("Max-Age");

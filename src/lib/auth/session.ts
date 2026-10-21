@@ -50,14 +50,29 @@ export function readCookie(header: string | null, name: string): string | undefi
   return undefined;
 }
 
-const secureFlag = () => (process.env.NODE_ENV === "production" ? "; Secure" : "");
-
-/** Без `remember` кука «сессионная» и исчезает при закрытии браузера; с ним живёт 30 дней. */
-export function sessionCookie(token: string, remember = false): string {
-  const maxAge = remember ? `; Max-Age=${REMEMBER_TTL_SECONDS}` : "";
-  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax${maxAge}${secureFlag()}`;
+/**
+ * Запрос пришёл по защищённому соединению (https напрямую или через туннель/прокси).
+ * Флаг Secure ставится только тогда: по обычному http://, например с телефона по адресу из локальной сети,
+ * браузер такую куку не сохранит, и вход бы «не держался».
+ */
+export function isSecureRequest(request: Request): boolean {
+  const forwarded = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase();
+  if (forwarded) return forwarded === "https";
+  try {
+    return new URL(request.url).protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
-export function clearedSessionCookie(): string {
-  return `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secureFlag()}`;
+const secureFlag = (secure: boolean) => (secure ? "; Secure" : "");
+
+/** Без `remember` кука «сессионная» и исчезает при закрытии браузера; с ним живёт 30 дней. */
+export function sessionCookie(token: string, remember = false, secure = false): string {
+  const maxAge = remember ? `; Max-Age=${REMEMBER_TTL_SECONDS}` : "";
+  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax${maxAge}${secureFlag(secure)}`;
+}
+
+export function clearedSessionCookie(secure = false): string {
+  return `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secureFlag(secure)}`;
 }

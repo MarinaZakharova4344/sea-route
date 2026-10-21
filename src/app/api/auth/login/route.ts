@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { isForeignOrigin, json } from "@/lib/auth/authorize";
 import { checkCredentials } from "@/lib/auth/login";
-import { REMEMBER_TTL_SECONDS, SESSION_TTL_SECONDS, sessionCookie, signSession } from "@/lib/auth/session";
+import { REMEMBER_TTL_SECONDS, isSecureRequest, SESSION_TTL_SECONDS, sessionCookie, signSession } from "@/lib/auth/session";
 
 const Body = z.object({
   email: z.string().min(1).max(200),
@@ -25,5 +25,5 @@ export async function POST(request: Request): Promise<Response> {
 
   const remember = parsed.data.remember === true;
   const token = await signSession(result.user.id, remember ? REMEMBER_TTL_SECONDS : SESSION_TTL_SECONDS);
-  return json({ user: result.user }, 200, { "Set-Cookie": sessionCookie(token, remember) });
+  return json({ user: result.user }, 200, { "Set-Cookie": sessionCookie(token, remember, isSecureRequest(request)) });
 }
