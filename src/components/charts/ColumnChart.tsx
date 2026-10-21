@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { VIZ, axisMoney } from "./charts";
 
 export interface Column {
@@ -36,6 +36,17 @@ export default function ColumnChart({ columns, ariaLabel }: { columns: Column[];
   const H = 230;
   const pad = { l: 50, r: 6, t: 10, b: 26 };
   const [active, setActive] = useState<number | null>(null);
+  const figure = useRef<HTMLElement>(null);
+
+  // Подсказка закрывается нажатием вне графика (на телефоне нет «ухода курсора»).
+  useEffect(() => {
+    if (active === null) return;
+    const close = (e: Event) => {
+      if (figure.current && !figure.current.contains(e.target as Node)) setActive(null);
+    };
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
+  }, [active]);
 
   const max = niceMax(Math.max(0, ...columns.map((c) => c.value)));
   const min = Math.min(0, ...columns.map((c) => c.value));
@@ -55,7 +66,7 @@ export default function ColumnChart({ columns, ariaLabel }: { columns: Column[];
   const align = tipLeft < 22 ? "left" : tipLeft > 78 ? "right" : "center";
 
   return (
-    <figure className="chart chart--tip" onMouseLeave={() => setActive(null)}>
+    <figure ref={figure} className="chart chart--tip" onMouseLeave={() => setActive(null)}>
       <div className="chart__plot">
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={ariaLabel} className="chart__svg">
           <defs>
@@ -87,7 +98,7 @@ export default function ColumnChart({ columns, ariaLabel }: { columns: Column[];
                 onMouseEnter={() => setActive(i)}
                 onFocus={() => setActive(i)}
                 onBlur={() => setActive((a) => (a === i ? null : a))}
-                onClick={() => setActive((a) => (a === i ? null : i))}
+                onClick={() => setActive(i)}
                 onKeyDown={(e) => e.key === "Escape" && setActive(null)}
               >
                 {/* область наведения шире столбика и на всю высоту */}
