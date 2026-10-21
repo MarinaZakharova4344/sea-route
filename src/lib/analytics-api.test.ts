@@ -69,6 +69,7 @@ describe("API подробностей: только для руководите
     ["profitDetail", "margin"],
     ["profitDetail", "payments"],
     ["dynamicsDetail", "rate"],
+    ["dynamicsDetail", "revised"],
   ];
 
   it("без входа 401, менеджеру 403", async () => {

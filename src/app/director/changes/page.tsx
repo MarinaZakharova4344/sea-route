@@ -37,6 +37,15 @@ export default async function Changes({ searchParams }: { searchParams: Params }
 
       <FreshnessBar refreshedAt={fresh.refreshedAt} everyMinutes={fresh.refreshEveryMinutes} />
 
+      {y.revisedCount > 0 && (
+        <Link href={`/director/changes/details/revised?weeks=${weeks}`} className="warn-note">
+          <span aria-hidden="true">⚠</span>
+          <span>
+            {y.revisedCount} {y.revisedCount === 1 ? "перевозка" : "перевозок"} этих периодов пересчитано задним числом: после закрытия в них внесли правки, поэтому прошлые цифры могли измениться. <u>Какие именно</u>
+          </span>
+        </Link>
+      )}
+
       <div className="seg-control" role="tablist" aria-label="Период">
         {PERIODS.map((x) => (
           <Link scroll={false} key={x.weeks} href={`/director/changes?weeks=${x.weeks}`} className={`seg-control__btn${x.weeks === weeks ? " seg-control__btn--on" : ""}`} aria-current={x.weeks === weeks ? "true" : undefined}>
@@ -152,7 +161,7 @@ export default async function Changes({ searchParams }: { searchParams: Params }
   );
 }
 
-function Contributors({ title, rows, empty }: { title: string; empty: string; rows: { id: number; number: string; client: string | null; direction: string | null; margin: number; effect: number; reasons: string[] }[] }) {
+function Contributors({ title, rows, empty }: { title: string; empty: string; rows: { id: number; number: string; client: string | null; direction: string | null; margin: number; effect: number; reasons: string[]; revisedAt: string | null }[] }) {
   return (
     <div className="contrib">
       <h3>{title}</h3>
@@ -169,6 +178,7 @@ function Contributors({ title, rows, empty }: { title: string; empty: string; ro
                     {r.direction ?? "—"}
                     {r.reasons.length > 0 && ` · ${r.reasons[0]}`}
                   </small>
+                  {r.revisedAt && <small className="contrib__revised">Пересчитано задним числом ({formatDate(r.revisedAt)})</small>}
                 </span>
                 <span className="contrib__nums">
                   <Delta value={r.effect} />

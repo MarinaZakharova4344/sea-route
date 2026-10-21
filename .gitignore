@@ -13,3 +13,6 @@ data/*.db-*
 !.env.example
 
 .DS_Store
+
+# создаётся Next.js автоматически при запуске
+AGENTS.md

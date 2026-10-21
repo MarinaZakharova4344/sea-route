@@ -11,6 +11,7 @@ import {
   deliveredIn,
   directionName,
   getPayments,
+  getRevisions,
   getProfit,
   isProblem,
   totalsOf,
@@ -534,7 +535,7 @@ export function getProfitDetail(db: Database.Database, days: number, metric: Pro
 
 // ---------- «Динамика»: что стоит за изменением ----------
 
-export const DYNAMICS_KINDS = ["current", "previous", "volume", "rate"] as const;
+export const DYNAMICS_KINDS = ["current", "previous", "volume", "rate", "revised"] as const;
 export type DynamicsKind = (typeof DYNAMICS_KINDS)[number];
 
 export function getDynamicsDetail(db: Database.Database, weeks: number, kind: DynamicsKind, today: string = todayIso()): DetailPage {
@@ -552,10 +553,29 @@ export function getDynamicsDetail(db: Database.Database, weeks: number, kind: Dy
   const curPeriod = `${formatDate(curFrom)} — ${formatDate(today)}`;
   const prevPeriod = `${formatDate(prevFrom)} — ${formatDate(prevTo)}`;
 
+  const revisions = getRevisions(db);
+  const revisedNote = (id: number) => {
+    const v = revisions.get(id);
+    return v ? `Пересчитано задним числом: после закрытия перевозку открыли заново и изменили ${formatDate(v.revisedAt)}${v.by ? `, ${v.by}` : ""}` : undefined;
+  };
+
   const list = (rows: MetricRow[], title: string): DetailGroup => ({
     title,
-    items: [...rows].sort((a, b) => a.margin - b.margin).map((r) => shipmentItem(r, formatMoney(r.margin) + (r.is_preliminary ? " *" : ""), r.margin < 0 ? "neg" : undefined)),
+    items: [...rows].sort((a, b) => a.margin - b.margin).map((r) => shipmentItem(r, formatMoney(r.margin) + (r.is_preliminary ? " *" : ""), r.margin < 0 ? "neg" : undefined, revisedNote(r.id))),
   });
+
+  if (kind === "revised") {
+    const rows = [...cur, ...prev].filter((r) => revisions.has(r.id));
+    return {
+      kind,
+      title: "Пересчитано задним числом",
+      lead: `Перевозки периодов ${prevPeriod} и ${curPeriod}, которые закрыли финансово, а потом открыли заново и изменили (например, пришёл поздний счёт). Маржа такой перевозки остаётся в месяце доставки груза, поэтому цифры уже просмотренных периодов могли измениться. Сами изменения видны в истории перевозки.`,
+      summary: [{ label: "Перевозок", value: String(rows.length) }, { label: "Маржа этих перевозок", value: formatMoney(rows.reduce((s, r) => s + r.margin, 0)) }],
+      action: rows.length ? "Открыть перевозку и посмотреть в истории, что и когда изменили, и почему счёт пришёл после закрытия" : null,
+      groups: rows.length ? [{ title: "От самых давних правок", items: [...rows].sort((a, b) => (revisions.get(a.id)!.revisedAt < revisions.get(b.id)!.revisedAt ? -1 : 1)).map((r) => shipmentItem(r, formatMoney(r.margin) + (r.is_preliminary ? " *" : ""), r.margin < 0 ? "neg" : undefined, revisedNote(r.id))) }] : [],
+      empty: "В этих периодах нет перевозок, пересчитанных задним числом.",
+    };
+  }
 
   if (kind === "current" || kind === "previous") {
     const rows = kind === "current" ? cur : prev;

@@ -1435,3 +1435,9 @@ a.compare__col:hover {
   line-height: 1.4;
   color: #ffd9b0;
 }
+
+.contrib__revised {
+  display: block;
+  margin-top: 2px;
+  color: #ffc37a;
+}

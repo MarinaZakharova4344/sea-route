@@ -92,6 +92,15 @@ describe("случай 1: счёт пришёл после финансовог�
     expect(marginOf(id)).toMatchObject({ margin: 2_300, prelim: 0 });
   });
 
+  it("поправка помечена «пересчитано задним числом» на экране «Динамика», а перевозки без пересмотра не помечены", () => {
+    const rev = analytics.getRevisions(db);
+    expect(rev.get(id)).toMatchObject({ revisedAt: "2026-11-30" });
+    const d = analytics.getDynamics(db, 8, "2026-11-30");
+    expect(d.revisedCount).toBe(1);
+    const other = (db.prepare("SELECT id FROM shipments WHERE id <> ? LIMIT 1").get(id) as { id: number } | undefined)?.id;
+    if (other) expect(rev.has(other)).toBe(false);
+  });
+
   it("в истории видно закрытие, открытие и новый расход с автором", () => {
     const fields = (db.prepare("SELECT field FROM change_log WHERE shipment_id = ?").all(id) as { field: string }[]).map((r) => r.field);
     expect(fields.some((f) => f.includes("Закрыта финансово") || f.toLowerCase().includes("закры"))).toBe(true);

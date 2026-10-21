@@ -6,6 +6,7 @@ import type Database from "better-sqlite3";
 import { ApiError } from "../api";
 import type { AuthUser } from "../auth/authorize";
 import { toDay } from "../dates";
+import { FINANCE_CLOSE_FIELD } from "../metrics";
 import type { ContainerInput, LineInput, ShipmentInput } from "./schemas";
 import type { z } from "zod";
 import type { ListQuery } from "./schemas";
@@ -29,7 +30,7 @@ const FIELD_LABELS: Record<string, string> = {
   actual_departure: "Фактическая дата отправления",
   planned_arrival: "Плановая дата прибытия",
   actual_arrival: "Фактическая дата прибытия",
-  finance_closed_at: "Финансовое закрытие",
+  finance_closed_at: FINANCE_CLOSE_FIELD,
 };
 
 const PAYMENT_LABELS: Record<string, string> = { unpaid: "не оплачено", partial: "оплачено частично", paid: "оплачено" };

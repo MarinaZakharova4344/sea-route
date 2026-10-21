@@ -6,6 +6,7 @@
  */
 import type Database from "better-sqlite3";
 import { diffDays, todayIso } from "./dates";
+import { FINANCE_CLOSE_FIELD } from "./metrics";
 import { loadThresholds } from "./recalc";
 
 // ---------- общее ----------
@@ -405,6 +406,33 @@ export function getGroupDetail(db: Database.Database, groupBy: GroupBy, id: numb
 
 // ---------- «Динамика»: что изменилось ----------
 
+export interface Revision {
+  id: number;
+  /** Дата последней правки после повторного открытия (ГГГГ-ММ-ДД). */
+  revisedAt: string;
+  /** Кто внёс последнюю правку. */
+  by: string | null;
+}
+
+/**
+ * Перевозки, пересчитанные задним числом: после финансового закрытия их открыли заново и что-то изменили.
+ * Маржа такой перевозки остаётся в месяце доставки, поэтому цифры прошлых периодов могли измениться.
+ */
+export function getRevisions(db: Database.Database): Map<number, Revision> {
+  const rows = db
+    .prepare(
+      `WITH reopen AS (SELECT shipment_id, MAX(id) AS rid FROM change_log WHERE field = ? AND new_value IS NULL GROUP BY shipment_id)
+       SELECT r.shipment_id AS id, substr(c.changed_at, 1, 10) AS revisedAt, u.name AS by
+       FROM reopen r
+       JOIN change_log c ON c.shipment_id = r.shipment_id AND c.id = (
+         SELECT MAX(c2.id) FROM change_log c2 WHERE c2.shipment_id = r.shipment_id AND c2.id > r.rid AND c2.field NOT IN (?, 'Статус')
+       )
+       LEFT JOIN users u ON u.id = c.changed_by`,
+    )
+    .all(FINANCE_CLOSE_FIELD, FINANCE_CLOSE_FIELD) as Revision[];
+  return new Map(rows.map((r) => [r.id, r]));
+}
+
 export interface WeekBucket {
   start: string;
   end: string;
@@ -422,6 +450,8 @@ export interface Contributor {
   /** Насколько маржа перевозки выше (+) или ниже (−) средней по предыдущему периоду. */
   effect: number;
   reasons: string[];
+  /** Дата правки, если перевозку пересчитали задним числом после закрытия. */
+  revisedAt: string | null;
 }
 
 export interface ClientChange {
@@ -446,6 +476,8 @@ export interface DynamicsResult {
   byClient: ClientChange[];
   dragging: Contributor[];
   boosting: Contributor[];
+  /** Сколько перевозок выбранного и предыдущего периода пересчитаны задним числом. */
+  revisedCount: number;
 }
 
 export function getDynamics(db: Database.Database, weeks: number, today: string = todayIso()): DynamicsResult {
@@ -486,6 +518,7 @@ export function getDynamics(db: Database.Database, weeks: number, today: string 
   prev.forEach((r) => bump(r, "previous"));
   const byClient = [...byKey.values()].map((e) => ({ ...e, delta: e.current - e.previous })).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
 
+  const revisions = getRevisions(db);
   const contributors: Contributor[] = cur.map((r) => ({
     id: r.id,
     number: r.number,
@@ -494,6 +527,7 @@ export function getDynamics(db: Database.Database, weeks: number, today: string 
     margin: r.margin,
     effect: Math.round(r.margin - avgPrev),
     reasons: (JSON.parse(r.reasons) as { text: string }[]).map((x) => x.text),
+    revisedAt: revisions.get(r.id)?.revisedAt ?? null,
   }));
   const dragging = contributors.filter((c) => c.effect < 0).sort((a, b) => a.effect - b.effect).slice(0, 5);
   const boosting = contributors.filter((c) => c.effect > 0).sort((a, b) => b.effect - a.effect).slice(0, 5);
@@ -516,6 +550,7 @@ export function getDynamics(db: Database.Database, weeks: number, today: string 
     byClient,
     dragging,
     boosting,
+    revisedCount: [...cur, ...prev].filter((r) => revisions.has(r.id)).length,
   };
 }
 

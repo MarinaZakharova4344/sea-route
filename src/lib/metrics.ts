@@ -4,6 +4,9 @@
  */
 import { diffDays, toDay } from "./dates";
 
+/** Как поле «закрыта финансово» записывается в историю изменений (по нему находят пересмотры задним числом). */
+export const FINANCE_CLOSE_FIELD = "Финансовое закрытие";
+
 export type ShipmentStatus = "draft" | "booked" | "in_transit" | "arrived" | "closed" | "cancelled";
 
 export interface ShipmentInput {
