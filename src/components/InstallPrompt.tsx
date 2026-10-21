@@ -39,7 +39,7 @@ export default function InstallPrompt() {
         {steps && ios ? (
           <span>В Safari нажмите «Поделиться» (квадрат со стрелкой), затем «На экран Домой».</span>
         ) : (
-          <span>Откроется как обычное приложение, без адресной строки, значок появится на экране.</span>
+          <span>Откроется как обычное приложение, значок появится на экране.</span>
         )}
       </div>
       <div className="install-prompt__btns">
