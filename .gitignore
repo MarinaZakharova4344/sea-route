@@ -14,5 +14,3 @@ data/*.db-*
 
 .DS_Store
 
-# создаётся Next.js автоматически при запуске
-AGENTS.md
