@@ -8,15 +8,26 @@ export const REMEMBER_TTL_SECONDS = 60 * 60 * 24 * 30;
 
 const DEV_SECRET = "dev-only-secret-change-me-in-env-0123456789";
 
+const PLACEHOLDER = /change-me|example|your-secret|secret-here/i;
+const encode = (v: string) => new TextEncoder().encode(v);
+
+/**
+ * Секрет подписи сессий. В рабочей среде секрет из образца (`change-me…`) или слишком короткий (меньше 32 символов)
+ * нельзя использовать: его знает любой, кто видел `.env.example`, и сессию можно было бы подделать. Вместо этого создаётся
+ * случайный секрет на время работы процесса (после перезапуска придётся войти заново), а в журнал пишется предупреждение.
+ */
 function secret(): Uint8Array {
   const value = process.env.SESSION_SECRET;
-  if (!value) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("SESSION_SECRET не задан. Скопируйте .env.example в .env и задайте значение.");
-    }
-    return new TextEncoder().encode(DEV_SECRET);
+  if (value && value.length >= 32 && !PLACEHOLDER.test(value)) return encode(value);
+  if (process.env.NODE_ENV !== "production") return encode(value || DEV_SECRET);
+
+  // Один и тот же секрет для всех частей приложения в процессе (страницы и API собираются отдельно).
+  const shared = globalThis as { __seaRouteSecret?: string };
+  if (!shared.__seaRouteSecret) {
+    shared.__seaRouteSecret = crypto.randomUUID() + crypto.randomUUID();
+    console.warn("ВНИМАНИЕ: SESSION_SECRET не задан или слишком простой. Использован временный случайный секрет: после перезапуска все войдут заново. Задайте длинную случайную строку в .env.");
   }
-  return new TextEncoder().encode(value);
+  return encode(shared.__seaRouteSecret);
 }
 
 /** Токен хранит только id пользователя: роль каждый раз берётся из базы. */
