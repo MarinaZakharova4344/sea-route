@@ -5,7 +5,7 @@
 import type Database from "better-sqlite3";
 import { ApiError } from "../api";
 import type { AuthUser } from "../auth/authorize";
-import { toDay } from "../dates";
+import { localDay, toDay } from "../dates";
 import { FINANCE_CLOSE_FIELD } from "../metrics";
 import type { ContainerInput, LineInput, ShipmentInput } from "./schemas";
 import type { z } from "zod";
@@ -36,7 +36,7 @@ const FIELD_LABELS: Record<string, string> = {
 const PAYMENT_LABELS: Record<string, string> = { unpaid: "не оплачено", partial: "оплачено частично", paid: "оплачено" };
 
 const ts = (now: Date) => `${now.toISOString().slice(0, 19)}Z`;
-const day = (now: Date) => now.toISOString().slice(0, 10);
+const day = (now: Date) => localDay(now);
 const rub = (n: number | null) => (n === null ? null : `${n.toLocaleString("ru-RU")} ₽`);
 
 interface ShipmentRow {
