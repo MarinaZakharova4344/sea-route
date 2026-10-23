@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
-import Waterfall from "@/components/charts/explore/Waterfall";
-import ClientScatter from "@/components/charts/explore/ClientScatter";
-import { ChartCard } from "@/components/charts/explore/shared";
 import { RevenueMarginBars, SegmentedBar, VIZ } from "@/components/charts/charts";
 import { getPayments, getProfit, getStaleSummary, type GroupBy } from "@/lib/analytics";
 import { formatDate, formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
@@ -34,34 +31,23 @@ export default async function Profit({ searchParams }: { searchParams: Params })
       <header className="dhead">
         <h1>Что приносит прибыль?</h1>
         <p>
-          Результат перевозок, доставленных {formatDate(p.from)} — {formatDate(p.to)}
+          {formatDate(p.from)} — {formatDate(p.to)}
         </p>
       </header>
 
       <FreshnessBar refreshedAt={fresh.refreshedAt} everyMinutes={fresh.refreshEveryMinutes} />
 
-      {stale.stale > 0 && (
-        <Link href="/director/details/stale" className="warn-note">
-          <span aria-hidden="true">⚠</span>
-          <span>
-            {stale.stale} из {stale.active} активных перевозок не обновлялись больше {stale.days} дн.: показатели по ним могут быть неточными. <u>Какие именно</u>
-          </span>
-        </Link>
-      )}
-
-      <div className="seg-control" role="tablist" aria-label="Период">
-        {PERIODS.map((x) => (
-          <Link scroll={false} key={x.days} href={href(x.days, by)} className={`seg-control__btn${x.days === days ? " seg-control__btn--on" : ""}`} aria-current={x.days === days ? "true" : undefined}>
-            {x.label}
-          </Link>
-        ))}
-      </div>
-
       <section className="hero-card" aria-label="Итог за период">
-        <span className="hero-card__cap">Маржа по перевозкам</span>
-        <p className="hero-card__note">Не чистая прибыль компании: общие расходы и налоги не вычтены</p>
+        <h2 className="xcard__title">Маржа по перевозкам</h2>
+        <div className="seg-inline seg-inline--left" role="tablist" aria-label="Период">
+          {PERIODS.map((x) => (
+            <Link scroll={false} key={x.days} href={href(x.days, by)} className={`seg-inline__btn${x.days === days ? " seg-inline__btn--on" : ""}`} aria-current={x.days === days ? "true" : undefined}>
+              {x.label}
+            </Link>
+          ))}
+        </div>
         <Link href={`/director/profit/details/margin?days=${days}`} className="hero-card__big hero-card__big--link">
-          <span className={p.totals.margin < 0 ? "neg" : ""}>{formatMoneyShort(p.totals.margin)}</span>
+          <span className={p.totals.margin < 0 ? "neg" : "pos"}>{formatMoneyShort(p.totals.margin)}</span>
           <span className="hero-card__pct">{formatPercent(p.totals.marginPct)} от оборота</span>
           <span className="more-link">Из чего сложилась ›</span>
         </Link>
@@ -93,63 +79,25 @@ export default async function Profit({ searchParams }: { searchParams: Params })
             { label: `Предварительная (${p.totals.preliminaryCount})`, value: Math.max(p.totals.preliminaryMargin, 0), color: VIZ.pending, href: `/director/profit/details/preliminary?days=${days}` },
           ]}
         />
-
-        <details className="explain">
-          <summary>Что входит в этот показатель и чего в нём нет</summary>
-          <ul>
-            <li>
-              <strong>Что считаем:</strong> маржа = доходы − расходы по строкам перевозки. По каждой строке берётся фактическая сумма, а если её ещё нет, плановая.
-            </li>
-            <li>
-              <strong>Период:</strong> перевозка относится к месяцу, в котором груз доставлен (а не отправлен и не оплачен).
-            </li>
-            <li>
-              <strong>Предварительная</strong> маржа: перевозка ещё не закрыта финансово или по части расходов нет факта. После закрытия цифра становится окончательной.
-            </li>
-            <li>
-              <strong>Не входит:</strong> общие расходы компании (зарплаты, аренда), налоги и перевозки в пути. Это не чистая прибыль компании.
-            </li>
-          </ul>
-        </details>
-        <p className="hint">
-          <Link href={`/director/profit/details/inprogress?days=${days}`} className="legend__link">
-            В работе ещё {p.inProgress.count} {p.inProgress.count === 1 ? "перевозка" : "перевозок"}: ожидаемая маржа по плану {formatMoneyShort(p.inProgress.expectedMargin)} (в итог не входит) ›
-          </Link>
-        </p>
       </section>
 
-      {p.totals.count > 0 && (
-        <ChartCard title="Из чего сложилась маржа?" hint="Оборот минус расходы. Нажмите на столбец: откроются перевозки и суммы по строкам.">
-          <Waterfall
-            ariaLabel="Оборот, расходы и маржа за период"
-            steps={[
-              { key: "rev", label: "Оборот", kind: "total", value: p.totals.revenue, href: `/director/profit/details/revenue?days=${days}` },
-              { key: "cost", label: "Расходы", kind: "delta", value: -p.totals.cost, href: `/director/profit/details/cost?days=${days}` },
-              { key: "margin", label: "Маржа", kind: "total", value: p.totals.margin, href: `/director/profit/details/margin?days=${days}`, hint: formatPercent(p.totals.marginPct) + " от оборота" },
-            ]}
-          />
-        </ChartCard>
-      )}
-
-      {p.groups.length > 1 && (
-        <ChartCard
-          title={by === "client" ? "Кто приносит деньги, а кто только оборот?" : "Какие направления приносят деньги?"}
-          hint="Вправо — оборот, вверх — маржа в процентах. Красные точки внизу справа: много оборота, мало денег. Нажмите на точку, чтобы открыть."
-        >
-          <ClientScatter
-            ariaLabel="Оборот и маржа в процентах по группам"
-            avgPct={p.totals.marginPct}
-            dots={p.groups.map((g) => ({ key: String(g.id ?? g.name), name: g.name, revenue: g.revenue, marginPct: g.marginPct, count: g.count, href: g.id ? `/director/profit/${by}/${g.id}?days=${days}` : undefined }))}
-          />
-        </ChartCard>
+      {stale.stale > 0 && (
+        <Link href="/director/details/stale" className="warn-note">
+          <span aria-hidden="true">⚠</span>
+          <span>
+            {stale.stale} из {stale.active} активных перевозок не обновлялись больше {stale.days} дн.: показатели по ним могут быть неточными. <u>Какие именно</u>
+          </span>
+        </Link>
       )}
 
       <section aria-label="Оплаты клиентов">
         <Link href={`/director/profit/details/payments?days=${days}`} className="pay-card">
-          <span className="pay-card__cap">Оплаты клиентов за период</span>
+          <h2 className="xcard__title pay-card__cap">Оплаты клиентов за период</h2>
           <strong className="pay-card__sum">{formatMoneyShort(pay.received)}</strong>
           <span className="pay-card__sub">
-            {pay.lines} {pay.lines === 1 ? "оплата" : "оплат"} · считаются по дате прихода денег, это не прибыль
+            {pay.lines} {pay.lines === 1 ? "оплата" : "оплат"}
+            <br />
+            Считаются по дате прихода денег, это не прибыль
           </span>
           <em className="more-link">Какие оплаты ›</em>
         </Link>
@@ -157,7 +105,7 @@ export default async function Profit({ searchParams }: { searchParams: Params })
 
       <section aria-label="Клиенты и направления">
         <div className="section-head">
-          <h2>{by === "client" ? "По клиентам" : "По направлениям"}</h2>
+          <h2>{by === "client" ? "Оборот и маржа по клиентам" : "Оборот и маржа по направлениям"}</h2>
           <div className="seg-control seg-control--small">
             <Link scroll={false} href={href(days, "client")} className={`seg-control__btn${by === "client" ? " seg-control__btn--on" : ""}`}>
               Клиенты
@@ -220,9 +168,7 @@ export default async function Profit({ searchParams }: { searchParams: Params })
             ))}
           </ul>
         )}
-        <p className="hint">«С проблемами»: опоздание больше порога, перерасход больше порога или просроченная оплата. Нажмите на строку, чтобы увидеть перевозки.</p>
-        <p className="hint">Итого по клиентам: оборот {formatMoney(p.totals.revenue)}, маржа {formatMoney(p.totals.margin)}.</p>
-      </section>
+                      </section>
     </>
   );
 }

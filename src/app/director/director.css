@@ -2223,3 +2223,23 @@ a:hover .app .more-link,
 .app .contrib__reason {
   font-weight: 600;
 }
+
+/* заголовки блоков «Доходности» в стиле блоков «Динамики» */
+.app .hero-card h2.xcard__title,
+.app .pay-card h2.pay-card__cap {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink);
+}
+
+/* крупные суммы «Маржа по перевозкам» и «Оплаты клиентов» зелёные */
+.app .pay-card__sum {
+  color: var(--good);
+}
+
+.app .hero-card__big .pos {
+  color: var(--good);
+}
