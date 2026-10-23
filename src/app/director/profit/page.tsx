@@ -3,7 +3,7 @@ import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
 import { RevenueMarginBars, SegmentedBar, VIZ } from "@/components/charts/charts";
 import { getPayments, getProfit, getStaleSummary, type GroupBy } from "@/lib/analytics/analytics";
-import { formatDate, formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
+import { formatDate, formatMoney, formatMoneyShort, formatPercent, plural } from "@/lib/format";
 import { ensureFresh } from "@/lib/calc/recalc";
 
 type Params = Promise<Record<string, string | string[] | undefined>>;
@@ -51,6 +51,7 @@ export default async function Profit({ searchParams }: { searchParams: Params })
           <span className="hero-card__pct">{formatPercent(p.totals.marginPct)} от оборота</span>
           <span className="more-link">Из чего сложилась ›</span>
         </Link>
+        <p className="hero-card__caption">Не чистая прибыль компании: общие расходы и налоги не вычтены</p>
         <dl className="facts facts--links">
           <Link href={`/director/profit/details/revenue?days=${days}`} className="fact">
             <dt>Оборот</dt>
@@ -141,7 +142,7 @@ export default async function Profit({ searchParams }: { searchParams: Params })
                     <span className={`group__pct${g.marginPct < p.totals.marginPct * 0.5 ? " group__pct--low" : ""}`}>{formatPercent(g.marginPct)}</span>
                   </div>
                   <div className="group__sub">
-                    {g.count} {g.count === 1 ? "перевозка" : "перевозок"}
+                    {g.count} {plural(g.count, ["перевозка", "перевозки", "перевозок"])}
                     <br />
                     {formatPercent(g.revenueShare)} оборота
                   </div>

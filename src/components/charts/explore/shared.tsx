@@ -4,23 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import type { OrderRef } from "@/lib/analytics/overview";
+import { plural } from "@/lib/format";
 
-const WEEKDAYS = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
 const WEEKDAYS_FULL = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
 
-/** «21.10 ср» */
-export const dayShort = (iso: string, weekday: number) => `${iso.slice(8, 10)}.${iso.slice(5, 7)} ${WEEKDAYS[weekday]}`;
 /** «21 октября, среда» */
 export function dayLong(iso: string, weekday: number): string {
   const months = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
   return `${Number(iso.slice(8, 10))} ${months[Number(iso.slice(5, 7)) - 1]}, ${WEEKDAYS_FULL[weekday]}`;
 }
-
-export const plural = (n: number, f: [string, string, string]) => {
-  const a = Math.abs(n) % 10;
-  const b = Math.abs(n) % 100;
-  return a === 1 && b !== 11 ? f[0] : a >= 2 && a <= 4 && (b < 12 || b > 14) ? f[1] : f[2];
-};
 
 export const ordersWord = (n: number) => plural(n, ["заказ", "заказа", "заказов"]);
 

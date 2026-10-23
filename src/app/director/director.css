@@ -1335,6 +1335,12 @@ a.compare__col:hover {
   color: var(--muted);
 }
 
+.hero-card__caption {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .hero-card__note {
   margin: 2px 0 8px;
   font-size: 13px;
@@ -1617,84 +1623,6 @@ a.compare__col:hover {
   font-size: 13px;
   line-height: 1.4;
   color: var(--muted);
-}
-
-/* тепловая карта */
-.heat {
-  position: relative;
-}
-
-.heat__head,
-.heat__row {
-  display: grid;
-  grid-template-columns: 42px repeat(7, minmax(0, 1fr));
-  gap: 4px;
-  margin-bottom: 4px;
-}
-
-.heat__head span {
-  text-align: center;
-  font-size: 11.5px;
-  color: var(--muted);
-}
-
-.heat__label {
-  align-self: center;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.heat__cell {
-  min-height: 34px;
-  padding: 0;
-  border: 1px solid rgba(11, 26, 74, 0.072);
-  border-radius: 6px;
-  background: #eef4fb;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--ink);
-  cursor: pointer;
-}
-
-.heat__cell--empty {
-  border: 0;
-  background: transparent;
-  cursor: default;
-}
-
-.heat__cell--weekend {
-  color: var(--muted);
-}
-
-.heat__cell--today {
-  border-color: var(--ink);
-}
-
-.heat__cell--sel {
-  outline: 2px solid var(--ink);
-  outline-offset: 1px;
-}
-
-.heat__tip {
-  margin-top: 6px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.heat__scale {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 8px 0 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.heat__ramp {
-  width: 90px;
-  height: 8px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(31, 95, 191, 0.18), rgba(31, 95, 191, 0.88));
 }
 
 /* кольцо статусов */

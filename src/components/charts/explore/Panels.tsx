@@ -3,14 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Bucket, DayPoint, Overview } from "@/lib/analytics/overview";
-import { formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
+import { formatMoney, formatMoneyShort, plural, ruNumber } from "@/lib/format";
 import BarList from "./BarList";
 import Donut from "./Donut";
-import Heatmap from "./Heatmap";
-import MonthLines from "./MonthLines";
 import OrdersChart from "./OrdersChart";
 import { STATUS_NOTES } from "@/lib/analytics/status-notes";
-import { ChartCard, DrillPanel, dayLong, ordersWord, plural } from "./shared";
+import { ChartCard, DrillPanel, dayLong, ordersWord } from "./shared";
 
 const RANGES = [
   { days: 7, label: "7 дней" },
@@ -125,7 +123,7 @@ export function OrdersHero({ overview: o }: { overview: Overview }) {
         </div>
         {help && (
           <p className="xcard__note">
-          Прогноз проверен на последних {o.accuracy.days} днях: в среднем ошибается на ±{o.accuracy.mae} заказа, в коридор попадало {o.accuracy.withinBandPct}% дней.
+          Прогноз проверен на последних {o.accuracy.days} днях: в среднем ошибается на ±{ruNumber(o.accuracy.mae)} заказа, в коридор попадало {o.accuracy.withinBandPct} % дней.
         </p>
         )}
       </ChartCard>
@@ -146,26 +144,6 @@ export function OrdersHero({ overview: o }: { overview: Overview }) {
   );
 }
 
-export function WeekdayHeat({ overview: o }: { overview: Overview }) {
-  const [sel, setSel] = useState<string | null>(null);
-  return (
-    <ChartCard onDismiss={() => setSel(null)} title="В какие дни приходят заказы" hint="Недели сверху вниз, дни недели слева направо. Чем ярче, тем больше заказов. Нажмите на день.">
-      <Heatmap days={o.days} today={o.today} selected={sel} onSelect={setSel} />
-      {dayPanel(o, sel, () => setSel(null))}
-    </ChartCard>
-  );
-}
-
-export function MonthPace({ overview: o }: { overview: Overview }) {
-  const [day, setDay] = useState<number | null>(null);
-  return (
-    <ChartCard onDismiss={() => setDay(null)} title="Темп месяца" hint="Сколько заказов поступило с начала месяца: этот месяц и прошлый. Нажмите на число месяца.">
-      <MonthLines current={o.month.current} previous={o.month.previous} label={o.month.label} previousLabel={o.month.previousLabel} selectedDay={day} onSelect={setDay} />
-      {day && dayPanel(o, `${o.today.slice(0, 7)}-${String(day).padStart(2, "0")}`, () => setDay(null))}
-    </ChartCard>
-  );
-}
-
 export function StatusDonut({ overview: o }: { overview: Overview }) {
   const [sel, setSel] = useState<string | null>(null);
   const b = o.statuses.find((x) => x.key === sel);
@@ -173,21 +151,6 @@ export function StatusDonut({ overview: o }: { overview: Overview }) {
     <ChartCard onDismiss={() => setSel(null)} title="Статус перевозок">
       <Donut buckets={o.statuses} selected={sel} onSelect={(k) => setSel(k === sel ? null : k)} />
       {b && <DrillPanel title={`${b.label}: ${b.count}`} items={[]} note={STATUS_NOTES[b.key]} href={`/director/status/${b.key}`} onClose={() => setSel(null)} />}
-    </ChartCard>
-  );
-}
-
-export function DelaysChart({ overview: o }: { overview: Overview }) {
-  const [sel, setSel] = useState<string | null>(null);
-  return (
-    <ChartCard onDismiss={() => setSel(null)} title="Опоздания у доставленных" hint={`Груз, доставленный за последние 90 дней, по тому, на сколько дней он опоздал. Вовремя — до ${o.delays.thresholdDays} дней включительно.`}>
-      {o.delays.onTimePct !== null && (
-        <p className="xcard__big">
-          <strong>{o.delays.onTimePct}%</strong> доставлено вовремя <small>из {o.delays.total}</small>
-        </p>
-      )}
-      <BarList buckets={o.delays.buckets} selected={sel} onSelect={(k) => setSel(k === sel ? null : k)} value={(b) => b.count} format={(b) => String(b.count)} />
-      {bucketPanel(o.delays.buckets, sel, () => setSel(null), { title: (b) => `${b.label}: ${b.count}`, empty: "Здесь нет перевозок.", explain: (b) => `${b.count} ${plural(b.count, ["перевозка", "перевозки", "перевозок"])} за последние 90 дней, ${b.key === "0" ? "доставленные точно в срок" : b.key === "1-2" ? "доставленные с небольшим опозданием, в пределах допустимого" : "доставленные с опозданием: " + b.label.toLowerCase()}.` })}
     </ChartCard>
   );
 }
@@ -201,26 +164,8 @@ export function AgingChart({ overview: o }: { overview: Overview }) {
         <br />
         Срок не наступил: <strong>{formatMoneyShort(o.aging.totalOpen)}</strong>
       </p>
-      <BarList buckets={o.aging.buckets} selected={null} onSelect={(k) => router.push(`/director/receivables/${k}`)} value={(b) => b.amount} format={(b) => formatMoneyShort(b.amount)} sub={(b) => `${b.count} ${b.count === 1 ? "счёт" : "счетов"}`} />
+      <BarList buckets={o.aging.buckets} selected={null} onSelect={(k) => router.push(`/director/receivables/${k}`)} value={(b) => b.amount} format={(b) => formatMoneyShort(b.amount)} sub={(b) => `${b.count} ${plural(b.count, ["счёт", "счёта", "счетов"])}`} />
     </ChartCard>
   );
 }
 
-export function ClientsTurnover({ overview: o }: { overview: Overview }) {
-  const router = useRouter();
-  return (
-    <ChartCard title="Клиенты по обороту" hint="За последние 90 дней. Цвет полосы — маржа клиента. Нажмите на клиента, чтобы открыть его перевозки.">
-      <BarList
-        buckets={o.clients.map((c) => ({ key: String(c.id ?? "none"), label: c.name, count: c.count, amount: c.revenue, items: [], tone: c.marginPct < 8 ? "bad" : c.marginPct < 15 ? "warn" : "good" }))}
-        selected={null}
-        onSelect={(k) => k !== "none" && router.push(`/director/profit/client/${k}?days=90`)}
-        value={(b) => b.amount}
-        format={(b) => formatMoneyShort(b.amount)}
-        sub={(b) => {
-          const c = o.clients.find((x) => String(x.id ?? "none") === b.key);
-          return c ? `маржа ${formatPercent(c.marginPct)}, ${c.count} ${c.count === 1 ? "перевозка" : "перевозок"}` : undefined;
-        }}
-      />
-    </ChartCard>
-  );
-}
