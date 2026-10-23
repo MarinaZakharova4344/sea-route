@@ -535,9 +535,6 @@ body:has(.offline) {
   color: #33436b;
 }
 
-.offline__hint {
-  font-size: 14px;
-}
 
 .offline__btn {
   margin-top: 12px;
