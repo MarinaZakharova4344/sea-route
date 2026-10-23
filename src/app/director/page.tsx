@@ -5,7 +5,7 @@ import { AgingChart, StatusDonut } from "@/components/charts/explore/Panels";
 import StatusBadge from "@/components/shipment/StatusBadge";
 import { getAttention } from "@/lib/analytics/analytics";
 import { getOverview } from "@/lib/analytics/overview";
-import { formatDate, formatMoney, formatMoneyShort } from "@/lib/format";
+import { formatDate, formatMoney, formatMoneyShort, plural } from "@/lib/format";
 import { ensureFresh } from "@/lib/calc/recalc";
 import { STATUS_LABELS } from "@/lib/shipments/service";
 
@@ -153,10 +153,3 @@ function Tile({ href, title, value, sub }: { href: string; title: string; value:
   );
 }
 
-function plural(n: number, forms: [string, string, string]): string {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return forms[0];
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return forms[1];
-  return forms[2];
-}

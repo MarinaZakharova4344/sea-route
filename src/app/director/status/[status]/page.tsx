@@ -6,10 +6,9 @@ import BackLink from "@/components/layout/BackLink";
 import { STATUS_LABELS } from "@/lib/shipments/service";
 import { STATUS_NOTES, getShipmentsByStatus } from "@/lib/analytics/overview";
 import { ensureFresh } from "@/lib/calc/recalc";
+import { plural } from "@/lib/format";
 
 const SHOWN = 100;
-
-const countWord = (n: number) => (n % 10 === 1 && n % 100 !== 11 ? "перевозка" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "перевозки" : "перевозок");
 
 export default async function ShipmentsInStatus({ params }: { params: Promise<{ status: string }> }) {
   const { status } = await params;
@@ -39,7 +38,7 @@ export default async function ShipmentsInStatus({ params }: { params: Promise<{ 
       <header className="dhead">
         <h1>{STATUS_LABELS[status]}</h1>
         <p>
-          {list.length} {countWord(list.length)}. {STATUS_NOTES[status]}
+          {list.length} {plural(list.length, ["перевозка", "перевозки", "перевозок"])}. {STATUS_NOTES[status]}
         </p>
       </header>
 

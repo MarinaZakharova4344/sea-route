@@ -12,6 +12,7 @@ import bcrypt from "bcryptjs";
 import type Database from "better-sqlite3";
 import { applySchema, openDb } from "./";
 import { recalcAll } from "../lib/calc/recalc";
+import { todayIso } from "../lib/dates";
 
 export const DEMO_PASSWORD = "demo12345";
 
@@ -42,8 +43,8 @@ const pick = <T>(arr: readonly T[]): T => arr[int(0, arr.length - 1)];
 const roundK = (n: number) => Math.round(n / 1000) * 1000;
 
 function startOfToday(): Date {
-  const env = process.env.SEED_TODAY;
-  const d = env ? new Date(`${env}T00:00:00Z`) : new Date();
+  const env = process.env.SEED_TODAY || todayIso();
+  const d = new Date(`${env}T00:00:00Z`);
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 }
 

@@ -3,6 +3,7 @@
  * так их легко проверять тестами. Правила описаны в docs/calculations.md.
  */
 import { diffDays, toDay } from "../dates";
+import { ruNumber } from "../format";
 
 /** Как поле «закрыта финансово» записывается в историю изменений (по нему находят пересмотры задним числом). */
 export const FINANCE_CLOSE_FIELD = "Финансовое закрытие";
@@ -152,7 +153,7 @@ export function computeShipmentMetrics(
   }
   const live = s.status !== "draft" && s.status !== "cancelled" && s.financeClosedAt === null;
   if (live && overrunPct > thresholds.overrunPct) {
-    reasons.push({ code: "overrun", text: `Перерасход ${overrunPct} % от плана` });
+    reasons.push({ code: "overrun", text: `Перерасход ${ruNumber(overrunPct)} % от плана` });
   }
   if (s.status !== "draft" && hasOverduePayment) {
     reasons.push({ code: "overdue_payment", text: "Просрочена оплата" });

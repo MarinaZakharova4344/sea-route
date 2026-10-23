@@ -3,13 +3,12 @@ import { notFound } from "next/navigation";
 import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
 import BackLink from "@/components/layout/BackLink";
-import { formatDate, formatMoney, formatMoneyShort } from "@/lib/format";
+import { formatDate, formatMoney, formatMoneyShort, plural } from "@/lib/format";
 import { getReceivablesBucket, type ReceivableRow } from "@/lib/analytics/overview";
 import { ensureFresh } from "@/lib/calc/recalc";
 
 const SHOWN = 100;
 
-const invoices = (n: number) => (n % 10 === 1 && n % 100 !== 11 ? "счёт" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "счёта" : "счетов");
 
 export default async function ReceivablesBucket({ params }: { params: Promise<{ bucket: string }> }) {
   const { bucket } = await params;
@@ -42,7 +41,7 @@ export default async function ReceivablesBucket({ params }: { params: Promise<{ 
       <header className="dhead">
         <h1>{data.label}</h1>
         <p>
-          {data.rows.length} {invoices(data.rows.length)} на {formatMoneyShort(total)}
+          {data.rows.length} {plural(data.rows.length, ["счёт", "счёта", "счетов"])} на {formatMoneyShort(total)}
         </p>
       </header>
 

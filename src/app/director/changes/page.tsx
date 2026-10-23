@@ -7,7 +7,7 @@ import { OrdersHero } from "@/components/charts/explore/Panels";
 import { getOverview } from "@/lib/analytics/overview";
 import { Delta, DivergingBars, axisMoney } from "@/components/charts/charts";
 import { getDynamics } from "@/lib/analytics/analytics";
-import { formatDate, formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
+import { formatDate, formatMoney, formatMoneyShort, formatPercent, plural } from "@/lib/format";
 import { ensureFresh } from "@/lib/calc/recalc";
 
 type Params = Promise<Record<string, string | string[] | undefined>>;
@@ -44,7 +44,7 @@ export default async function Changes({ searchParams }: { searchParams: Params }
         <Link href={`/director/changes/details/revised?weeks=${weeks}`} className="warn-note">
           <span aria-hidden="true">⚠</span>
           <span>
-            {y.revisedCount} {y.revisedCount === 1 ? "перевозка" : "перевозок"} этих периодов пересчитано задним числом: после закрытия в них внесли правки, поэтому прошлые цифры могли измениться. <u>Какие именно</u>
+            {y.revisedCount} {plural(y.revisedCount, ["перевозка этих периодов пересчитана", "перевозки этих периодов пересчитаны", "перевозок этих периодов пересчитано"])} задним числом: после закрытия в них внесли правки, поэтому прошлые цифры могли измениться. <u>Какие именно</u>
           </span>
         </Link>
       )}
@@ -69,7 +69,7 @@ export default async function Changes({ searchParams }: { searchParams: Params }
             <span>{short(y.current.from)}–{short(y.current.to)}</span>
             <strong>{formatMoneyShort(y.currentTotals.margin)}</strong>
             <small>
-              {y.currentTotals.count} перевозок
+              {y.currentTotals.count} {plural(y.currentTotals.count, ["перевозка", "перевозки", "перевозок"])}
               <br />
               Маржа: {formatPercent(y.currentTotals.marginPct)}
             </small>
@@ -79,7 +79,7 @@ export default async function Changes({ searchParams }: { searchParams: Params }
             <span>{short(y.previous.from)}–{short(y.previous.to)}</span>
             <strong>{formatMoneyShort(y.previousTotals.margin)}</strong>
             <small>
-              {y.previousTotals.count} перевозок
+              {y.previousTotals.count} {plural(y.previousTotals.count, ["перевозка", "перевозки", "перевозок"])}
               <br />
               Маржа: {formatPercent(y.previousTotals.marginPct)}
             </small>

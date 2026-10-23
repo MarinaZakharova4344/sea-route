@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getDb } from "@/db";
 import StatusBadge from "@/components/shipment/StatusBadge";
 import ListFilters from "@/components/manager/ListFilters";
-import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
+import { formatDate, formatDateTime, formatMoney, plural } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/server";
 import { ensureFresh } from "@/lib/calc/recalc";
 import { ListQuery } from "@/lib/shipments/schemas";
@@ -54,7 +54,7 @@ export default async function ManagerHome({ searchParams }: { searchParams: Para
         <div>
           <h1 className="page__title">Перевозки</h1>
           <p className="page__sub">
-            {result.total} {declension(result.total, ["перевозка", "перевозки", "перевозок"])}
+            {result.total} {plural(result.total, ["перевозка", "перевозки", "перевозок"])}
             {analytics.refreshedAt && (
               <>
                 <br />
@@ -201,10 +201,3 @@ function Reasons({ reasons, dash = true }: { reasons: { code: string; text: stri
   );
 }
 
-function declension(n: number, forms: [string, string, string]): string {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return forms[0];
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return forms[1];
-  return forms[2];
-}

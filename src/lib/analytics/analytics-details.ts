@@ -19,7 +19,7 @@ import {
   type ReasonCode,
 } from "./analytics";
 import { diffDays, todayIso } from "../dates";
-import { formatDate, formatMoney, formatPercent } from "../format";
+import { formatDate, formatMoney, formatPercent, plural } from "../format";
 import { loadThresholds } from "../calc/recalc";
 
 export interface DetailItem {
@@ -56,11 +56,6 @@ export interface DetailPage {
 const shipmentHref = (id: number) => `/director/shipments/${id}`;
 const sign = (n: number) => (n > 0 ? "+" : n < 0 ? "−" : "");
 const signedMoney = (n: number) => `${sign(n)}${formatMoney(Math.abs(n))}`;
-const plural = (n: number, f: [string, string, string]) => {
-  const a = n % 10;
-  const b = n % 100;
-  return a === 1 && b !== 11 ? f[0] : a >= 2 && a <= 4 && (b < 12 || b > 14) ? f[1] : f[2];
-};
 const who = (name: string | null) => name ?? "не назначен";
 
 // ---------- «Сегодня»: причины и деньги под риском ----------

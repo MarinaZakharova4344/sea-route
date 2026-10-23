@@ -4,12 +4,12 @@ import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
 import BackLink from "@/components/layout/BackLink";
 import { todayIso } from "@/lib/dates";
+import { plural, ruNumber } from "@/lib/format";
 import { getOrdersOn, getOverview } from "@/lib/analytics/overview";
 import { ensureFresh } from "@/lib/calc/recalc";
 
 const dayLong = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("ru-RU", { day: "numeric", month: "long", timeZone: "UTC" });
 const weekdayName = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("ru-RU", { weekday: "long", timeZone: "UTC" });
-const ordersWord = (n: number) => (n % 10 === 1 && n % 100 !== 11 ? "заказ" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "заказа" : "заказов");
 
 export default async function OrdersOfDay({ params }: { params: Promise<{ date: string }> }) {
   const { date } = await params;
@@ -53,11 +53,11 @@ export default async function OrdersOfDay({ params }: { params: Promise<{ date: 
                 </div>
                 <div>
                   <dt>Точность</dt>
-                  <dd>±{overview.accuracy.mae}</dd>
+                  <dd>±{ruNumber(overview.accuracy.mae)}</dd>
                 </div>
               </dl>
             )}
-            <p className="hint">Точность проверена на последних {overview.accuracy.days} днях: в коридор попадало {overview.accuracy.withinBandPct}% дней. Прогноз не знает о праздниках и акциях.</p>
+            <p className="hint">Точность проверена на последних {overview.accuracy.days} днях: в коридор попадало {overview.accuracy.withinBandPct} % дней. Прогноз не знает о праздниках и акциях.</p>
           </>
         ) : (
           <>
@@ -68,7 +68,7 @@ export default async function OrdersOfDay({ params }: { params: Promise<{ date: 
               <div>
                 <dt>Поступило</dt>
                 <dd>
-                  {orders.length} {ordersWord(orders.length)}
+                  {orders.length} {plural(orders.length, ["заказ", "заказа", "заказов"])}
                 </dd>
               </div>
               {date === today && forecast && (

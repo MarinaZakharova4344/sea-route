@@ -1,5 +1,7 @@
 /** Форматирование для экранов: суммы, даты, время. */
 
+import { toDay } from "./dates";
+
 const nbsp = " ";
 
 export function formatMoney(value: number | null | undefined): string {
@@ -17,10 +19,10 @@ export function formatMoneyShort(value: number): string {
   return formatMoney(value);
 }
 
-/** 2026-10-20 → 20.10.2026 */
+/** 2026-10-20 → 20.10.2026; момент времени с «Z» переводится в день по часовому поясу компании. */
 export function formatDate(value: string | null | undefined): string {
   if (!value) return "—";
-  const [y, m, d] = value.slice(0, 10).split("-");
+  const [y, m, d] = toDay(value).split("-");
   return `${d}.${m}.${y}`;
 }
 
@@ -33,6 +35,16 @@ export function formatDateTime(value: string | null | undefined): string {
   return `${date}, ${time}`;
 }
 
+/** Склонение по числу: plural(2, ["заказ", "заказа", "заказов"]) → «заказа». */
+export function plural(n: number, forms: [string, string, string]): string {
+  const last = Math.abs(n) % 10;
+  const tens = Math.abs(n) % 100;
+  return last === 1 && tens !== 11 ? forms[0] : last >= 2 && last <= 4 && (tens < 12 || tens > 14) ? forms[1] : forms[2];
+}
+
+/** Число с десятичной запятой: 19.1 → 19,1. */
+export const ruNumber = (value: number): string => String(value).replace(".", ",");
+
 export function formatPercent(value: number): string {
-  return `${value.toFixed(1).replace(".", ",").replace(",0", "")}${nbsp}%`;
+  return `${value.toFixed(1).replace(".", ",").replace(",0", "").replace("-", "−")}${nbsp}%`;
 }

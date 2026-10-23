@@ -6,6 +6,7 @@
  */
 import type Database from "better-sqlite3";
 import { diffDays, todayIso } from "../dates";
+import { ruNumber } from "../format";
 import { FINANCE_CLOSE_FIELD } from "../calc/metrics";
 import { loadThresholds } from "../calc/recalc";
 
@@ -288,10 +289,10 @@ export function getProfit(db: Database.Database, days: number, groupBy: GroupBy,
     if (tt.count >= 2 && revenueShare >= 15 && (tt.marginPct < totals.marginPct * 0.5 || (problemShare >= 50 && tt.marginPct < totals.marginPct))) {
       verdict = {
         kind: "looks_better",
-        text: `Даёт ${revenueShare} % оборота, но маржа лишь ${tt.marginPct} % (по компании ${totals.marginPct} %); проблемных перевозок ${problemShare} %`,
+        text: `Даёт ${ruNumber(revenueShare)} % оборота, но маржа лишь ${ruNumber(tt.marginPct)} % (по компании ${ruNumber(totals.marginPct)} %); проблемных перевозок ${ruNumber(problemShare)} %`,
       };
     } else if (tt.count >= 2 && tt.marginPct >= totals.marginPct * 1.2 && problemShare <= 15) {
-      verdict = { kind: "works_well", text: `Маржа ${tt.marginPct} % при ${problemShare} % проблемных перевозок` };
+      verdict = { kind: "works_well", text: `Маржа ${ruNumber(tt.marginPct)} % при ${ruNumber(problemShare)} % проблемных перевозок` };
     }
     return {
       id,
@@ -413,7 +414,7 @@ export function getGroupDetail(db: Database.Database, groupBy: GroupBy, id: numb
       /** Что именно не так, словами: нужно и у закрытых перевозок, у которых текущих причин внимания уже нет. */
       problems: [
         ...(r.delay_days > t.delayDays ? [`Опоздание ${r.delay_days} дн.`] : []),
-        ...(r.overrun_pct > t.overrunPct ? [`Перерасход ${r.overrun_pct} % от плана`] : []),
+        ...(r.overrun_pct > t.overrunPct ? [`Перерасход ${ruNumber(r.overrun_pct)} % от плана`] : []),
         ...(r.has_overdue_payment === 1 ? ["Просрочена оплата"] : []),
       ],
     })),
