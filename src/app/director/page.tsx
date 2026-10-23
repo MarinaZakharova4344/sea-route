@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
+import { AgingChart, StatusDonut } from "@/components/charts/explore/Panels";
 import StatusBadge from "@/components/shipment/StatusBadge";
 import { getAttention } from "@/lib/analytics";
+import { getOverview } from "@/lib/overview";
 import { formatDate, formatMoney, formatMoneyShort } from "@/lib/format";
 import { ensureFresh } from "@/lib/recalc";
 import { STATUS_LABELS } from "@/lib/shipments/service";
@@ -18,6 +20,7 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
   const db = getDb();
   const fresh = ensureFresh(db);
   const a = getAttention(db);
+  const overview = getOverview(db);
 
   // Список растёт по 20 карточек («Показать ещё»), а не выводится целиком: в реальной базе их сотни.
   const requested = Number(Array.isArray(sp.n) ? sp.n[0] : sp.n);
@@ -30,9 +33,6 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
     <>
       <header className="dhead">
         <h1>Что требует внимания?</h1>
-        <p>
-          {new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" })}
-        </p>
       </header>
 
       <FreshnessBar refreshedAt={fresh.refreshedAt} everyMinutes={fresh.refreshEveryMinutes} />
@@ -42,14 +42,9 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
           <span className="hero-card__value">{a.total}</span>
           <span className="hero-card__label">
             {plural(a.total, ["перевозка требует", "перевозки требуют", "перевозок требуют"])} вашего внимания
-            <small>
-              {a.total - a.closedWithDebt} из {a.activeShipments} в работе и ещё не закрытых финансово
-              {a.closedWithDebt > 0 && <>, плюс {a.closedWithDebt} закрытых с неоплаченными счетами</>}
-            </small>
           </span>
         </div>
 
-        <h2 className="h-small">Почему</h2>
         <ul className="reasons">
           {a.byReason.map((r) => (
             <li key={r.code}>
@@ -66,14 +61,18 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
             </li>
           ))}
         </ul>
-        <p className="hint">Нажмите на причину, чтобы увидеть, какие перевозки и счета за ней стоят. Одна перевозка может иметь несколько причин.</p>
+        <p className="hint">Нажмите на причину, чтобы увидеть, какие перевозки и счета за ней стоят.</p>
       </section>
+
+      <StatusDonut overview={overview} />
 
       <section className="tiles" aria-label="Деньги под риском">
         <Tile href="/director/details/receivables" title="Клиенты не заплатили в срок" value={formatMoneyShort(a.receivables.amount)} sub={`${a.receivables.count} ${plural(a.receivables.count, ["счёт", "счёта", "счетов"])} просрочено`} />
         <Tile href="/director/details/payables" title="Мы не заплатили подрядчикам" value={formatMoneyShort(a.payables.amount)} sub={`${a.payables.count} ${plural(a.payables.count, ["счёт", "счёта", "счетов"])} просрочено`} />
         <Tile href="/director/details/overrun" title="Расходы сверх плана" value={formatMoneyShort(a.overrunExtra)} sub="по перевозкам, не закрытым финансово" />
       </section>
+
+      <AgingChart overview={overview} />
 
       <section aria-label="Перевозки, требующие внимания">
         <div className="section-head">
@@ -138,6 +137,7 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
         )}
         <p className="hint">* маржа предварительная: перевозка ещё не закрыта финансово или по части расходов нет фактической суммы.</p>
       </section>
+
     </>
   );
 }

@@ -2,6 +2,10 @@ import Link from "next/link";
 import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
 import ColumnChart from "@/components/charts/ColumnChart";
+import Waterfall from "@/components/charts/explore/Waterfall";
+import { MonthPace, OrdersHero, WeekdayHeat } from "@/components/charts/explore/Panels";
+import { ChartCard } from "@/components/charts/explore/shared";
+import { getOverview } from "@/lib/overview";
 import { Delta, DivergingBars, axisMoney } from "@/components/charts/charts";
 import { getDynamics } from "@/lib/analytics";
 import { formatDate, formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
@@ -23,6 +27,7 @@ export default async function Changes({ searchParams }: { searchParams: Params }
   const db = getDb();
   const fresh = ensureFresh(db);
   const y = getDynamics(db, weeks);
+  const overview = getOverview(db);
   const dir = y.delta.margin;
   const fewBefore = y.previousTotals.count < 3;
 
@@ -36,6 +41,8 @@ export default async function Changes({ searchParams }: { searchParams: Params }
       </header>
 
       <FreshnessBar refreshedAt={fresh.refreshedAt} everyMinutes={fresh.refreshEveryMinutes} />
+
+      <OrdersHero overview={overview} />
 
       {y.revisedCount > 0 && (
         <Link href={`/director/changes/details/revised?weeks=${weeks}`} className="warn-note">
@@ -82,6 +89,18 @@ export default async function Changes({ searchParams }: { searchParams: Params }
         </div>
         {fewBefore && <p className="note">В предыдущем периоде мало перевозок ({y.previousTotals.count}), поэтому сравнение может быть неточным.</p>}
       </section>
+
+      <ChartCard title="Как маржа дошла до сегодняшней" hint="Было → изменение из-за числа перевозок → изменение из-за маржи с одной перевозки → стало. Нажмите на столбец.">
+        <Waterfall
+          ariaLabel="Мост от прошлой маржи к текущей"
+          steps={[
+            { key: "prev", label: "Раньше", kind: "total", value: y.previousTotals.margin, href: `/director/changes/details/previous?weeks=${weeks}` },
+            { key: "vol", label: "Число перевозок", kind: "delta", value: y.effects.volume, href: `/director/changes/details/volume?weeks=${weeks}`, hint: `${y.previousTotals.count} → ${y.currentTotals.count} перевозок` },
+            { key: "rate", label: "Маржа с одной", kind: "delta", value: y.effects.rate, href: `/director/changes/details/rate?weeks=${weeks}`, hint: `${axisMoney(y.effects.averagePrevious)} → ${axisMoney(y.effects.averageCurrent)} ₽ на перевозку` },
+            { key: "cur", label: "Сейчас", kind: "total", value: y.currentTotals.margin, href: `/director/changes/details/current?weeks=${weeks}` },
+          ]}
+        />
+      </ChartCard>
 
       <section aria-label="Маржа по неделям">
         <div className="section-head">
@@ -134,6 +153,14 @@ export default async function Changes({ searchParams }: { searchParams: Params }
         <Contributors title="Потянули вниз" empty="Нет перевозок с маржой ниже обычной." rows={y.dragging} />
         <Contributors title="Помогли" empty="Нет перевозок с маржой выше обычной." rows={y.boosting} />
         <p className="hint">Влияние перевозки = её маржа минус средняя маржа перевозки в предыдущем периоде.</p>
+      </section>
+
+      <section aria-label="Поток заказов">
+        <div className="section-head">
+          <h2>Поток заказов</h2>
+        </div>
+        <MonthPace overview={overview} />
+        <WeekdayHeat overview={overview} />
       </section>
 
       <section aria-label="Изменение по клиентам">

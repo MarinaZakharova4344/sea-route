@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 const fmt = (iso: string | null) =>
   iso
-    ? new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    ? new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
     : "ещё не считались";
 
 const timeOnly = (iso: string) => new Date(iso).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -49,13 +49,12 @@ export default function FreshnessBar({ refreshedAt, everyMinutes }: { refreshedA
 
   return (
     <>
-      <div className="fresh" role="status">
-        <div className="fresh__text">
-          <strong>Данные на {fmt(shown)}</strong>
-          <span>Обновляются каждые {everyMinutes} мин. Правки менеджеров появляются после обновления.</span>
-          {state === "error" && <span className="fresh__error">Не удалось обновить: нет связи с сервером. Показаны прежние данные.</span>}
-        </div>
-        <button type="button" className="btn" onClick={refresh} disabled={state === "loading"}>
+      <div className="fresh" role="status" title={`Данные обновляются каждые ${everyMinutes} мин. Правки менеджеров появляются после обновления.`}>
+        <span className="fresh__text">
+          Данные на <strong>{fmt(shown)}</strong>
+        </span>
+        {state === "error" && <span className="fresh__error">нет связи, показаны прежние</span>}
+        <button type="button" className="fresh__btn" onClick={refresh} disabled={state === "loading"}>
           {state === "loading" ? "Обновляем…" : "Обновить"}
         </button>
       </div>

@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
+import Waterfall from "@/components/charts/explore/Waterfall";
+import ClientScatter from "@/components/charts/explore/ClientScatter";
+import { ChartCard } from "@/components/charts/explore/shared";
 import { RevenueMarginBars, SegmentedBar, VIZ } from "@/components/charts/charts";
 import { getPayments, getProfit, getStaleSummary, type GroupBy } from "@/lib/analytics";
 import { formatDate, formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
@@ -114,6 +117,32 @@ export default async function Profit({ searchParams }: { searchParams: Params })
           </Link>
         </p>
       </section>
+
+      {p.totals.count > 0 && (
+        <ChartCard title="Из чего сложилась маржа" hint="Оборот минус расходы. Нажмите на столбец: откроются перевозки и суммы по строкам.">
+          <Waterfall
+            ariaLabel="Оборот, расходы и маржа за период"
+            steps={[
+              { key: "rev", label: "Оборот", kind: "total", value: p.totals.revenue, href: `/director/profit/details/revenue?days=${days}` },
+              { key: "cost", label: "Расходы", kind: "delta", value: -p.totals.cost, href: `/director/profit/details/cost?days=${days}` },
+              { key: "margin", label: "Маржа", kind: "total", value: p.totals.margin, href: `/director/profit/details/margin?days=${days}`, hint: formatPercent(p.totals.marginPct) + " от оборота" },
+            ]}
+          />
+        </ChartCard>
+      )}
+
+      {p.groups.length > 1 && (
+        <ChartCard
+          title={by === "client" ? "Кто приносит деньги, а кто только оборот" : "Какие направления приносят деньги"}
+          hint="Вправо — оборот, вверх — маржа в процентах. Красные точки внизу справа: много оборота, мало денег. Нажмите на точку, чтобы открыть."
+        >
+          <ClientScatter
+            ariaLabel="Оборот и маржа в процентах по группам"
+            avgPct={p.totals.marginPct}
+            dots={p.groups.map((g) => ({ key: String(g.id ?? g.name), name: g.name, revenue: g.revenue, marginPct: g.marginPct, count: g.count, href: g.id ? `/director/profit/${by}/${g.id}?days=${days}` : undefined }))}
+          />
+        </ChartCard>
+      )}
 
       <section aria-label="Оплаты клиентов">
         <Link href={`/director/profit/details/payments?days=${days}`} className="pay-card">

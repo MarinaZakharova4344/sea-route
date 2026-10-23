@@ -69,12 +69,6 @@ export default function ColumnChart({ columns, ariaLabel }: { columns: Column[];
     <figure ref={figure} className="chart chart--tip" onMouseLeave={() => setActive(null)}>
       <div className="chart__plot">
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={ariaLabel} className="chart__svg">
-          <defs>
-            <linearGradient id="col-current" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#FFB878" />
-              <stop offset="1" stopColor="#F07F34" />
-            </linearGradient>
-          </defs>
           {ticks.map((t) => (
             <g key={t}>
               <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} stroke={t === 0 ? VIZ.axis : VIZ.grid} strokeWidth={t === 0 ? 1.5 : 1} />
@@ -102,10 +96,10 @@ export default function ColumnChart({ columns, ariaLabel }: { columns: Column[];
                 onKeyDown={(e) => e.key === "Escape" && setActive(null)}
               >
                 {/* область наведения шире столбика и на всю высоту */}
-                <rect x={pad.l + slot * i} y={pad.t} width={slot} height={innerH} fill={on ? "rgba(255,255,255,0.07)" : "transparent"} />
-                {h > 0 && <path d={rounded(x, top, bw, h, 4, c.value >= 0)} fill={c.tone === "current" ? "url(#col-current)" : VIZ.muted} opacity={active === null || on ? 1 : 0.55} />}
+                <rect x={pad.l + slot * i} y={pad.t} width={slot} height={innerH} fill={on ? "rgba(11,26,74,0.06)" : "transparent"} />
+                {h > 0 && <path d={rounded(x, top, bw, h, 4, c.value >= 0)} fill={c.tone === "current" ? VIZ.accent : VIZ.muted} opacity={active === null || on ? 1 : 0.55} />}
                 {i % every === 0 && (
-                  <text x={x + bw / 2} y={H - 8} textAnchor="middle" fontSize="10.5" fill={on ? "#fff" : VIZ.ink2}>
+                  <text x={x + bw / 2} y={H - 8} textAnchor="middle" fontSize="10.5" fill={on ? "#0b1a4a" : VIZ.ink2}>
                     {c.label}
                   </text>
                 )}
