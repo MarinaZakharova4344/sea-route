@@ -25,9 +25,8 @@ export default async function ReceivablesBucket({ params }: { params: Promise<{ 
         <span className="ditem__main">
           <strong>{r.number}</strong>
           <small>{r.client ?? "Клиент не указан"}</small>
-          <small>
-            {r.description} · оплатить до {formatDate(r.due)}
-          </small>
+          <small>{r.description}</small>
+          <small>Оплатить до: {formatDate(r.due)}</small>
         </span>
         <span className="ditem__value">{formatMoney(r.remaining)}</span>
         <span className="ditem__chev" aria-hidden="true">

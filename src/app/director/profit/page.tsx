@@ -141,7 +141,9 @@ export default async function Profit({ searchParams }: { searchParams: Params })
                     <span className={`group__pct${g.marginPct < p.totals.marginPct * 0.5 ? " group__pct--low" : ""}`}>{formatPercent(g.marginPct)}</span>
                   </div>
                   <div className="group__sub">
-                    {g.count} {g.count === 1 ? "перевозка" : "перевозок"} · {formatPercent(g.revenueShare)} оборота
+                    {g.count} {g.count === 1 ? "перевозка" : "перевозок"}
+                    <br />
+                    {formatPercent(g.revenueShare)} оборота
                   </div>
                   <RevenueMarginBars revenue={g.revenue} margin={g.margin} max={maxRevenue} />
                   <div className="group__nums">

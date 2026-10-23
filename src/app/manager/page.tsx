@@ -55,7 +55,12 @@ export default async function ManagerHome({ searchParams }: { searchParams: Para
           <h1 className="page__title">Перевозки</h1>
           <p className="page__sub">
             {result.total} {declension(result.total, ["перевозка", "перевозки", "перевозок"])}
-            {analytics.refreshedAt && <> · показатели обновлены {formatDateTime(analytics.refreshedAt)}</>}
+            {analytics.refreshedAt && (
+              <>
+                <br />
+                Показатели обновлены: {formatDateTime(analytics.refreshedAt)}
+              </>
+            )}
           </p>
         </div>
         <Link href="/manager/shipments/new" className="btn btn--primary">

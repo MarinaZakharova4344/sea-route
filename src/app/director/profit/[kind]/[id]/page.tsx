@@ -93,7 +93,9 @@ export default async function GroupPage({ params, searchParams }: Props) {
                   </div>
                   <div className="cell-main">{by === "client" ? (s.direction ?? "Направление не указано") : (s.client ?? "Клиент не указан")}</div>
                   <div className="cell-sub">
-                    доставлена {formatDate(s.resultDate)} · оборот {formatMoney(s.revenue)}
+                    Доставлена: {formatDate(s.resultDate)}
+                    <br />
+                    Оборот: {formatMoney(s.revenue)}
                   </div>
                   {(s.reasons.length > 0 ? s.reasons : s.problems).length > 0 && (
                     <div className="chips attn__chips">

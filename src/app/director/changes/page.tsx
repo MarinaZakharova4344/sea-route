@@ -184,16 +184,10 @@ function Contributors({ title, rows, empty }: { title: string; empty: string; ro
             <li key={r.id}>
               <Link href={`/director/shipments/${r.id}`} className="contrib__row">
                 <span className="contrib__main">
-                  <strong>{r.number}</strong> {r.client ?? "Клиент не указан"}
-                  <small>
-                    {r.direction ?? "—"}
-                    {r.reasons.length > 0 && (
-                      <>
-                        {" · "}
-                        <span className={r.reasons[0].startsWith("Просрочена оплата") ? "neg contrib__reason" : undefined}>{r.reasons[0]}</span>
-                      </>
-                    )}
-                  </small>
+                  <strong>{r.number}</strong>
+                  <span className="contrib__client">{r.client ?? "Клиент не указан"}</span>
+                  <small>{r.direction ?? "—"}</small>
+                  {r.reasons.length > 0 && <small className={r.reasons[0].startsWith("Просрочена оплата") ? "neg contrib__reason" : undefined}>{r.reasons[0]}</small>}
                   {r.revisedAt && <small className="contrib__revised">Пересчитано задним числом ({formatDate(r.revisedAt)})</small>}
                 </span>
                 <span className="contrib__nums">

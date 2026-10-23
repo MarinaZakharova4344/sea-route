@@ -30,7 +30,7 @@ export function ResultSection({ s }: { s: Shipment }) {
             </div>
           </div>
           <p className="hint">
-            {m.isPreliminary ? "Предварительно: перевозка не закрыта финансово или по части строк нет факта." : "Окончательно: перевозка закрыта финансово."} Фактическая сумма, если она есть, иначе плановая.
+            {m.isPreliminary ? "Предварительно: перевозка не закрыта финансово." : "Окончательно: перевозка закрыта финансово."}
           </p>
           {m.attentionReasons.length > 0 && (
             <div className="chips">
@@ -62,7 +62,9 @@ export function HistorySection({ s }: { s: Shipment }) {
             {s.changes.map((c) => (
               <li key={c.id}>
                 <span className="history__time">
-                  {formatDateTime(c.changedAt)} · {c.changedBy ?? "—"}
+                  {formatDateTime(c.changedAt)}
+                  <br />
+                  {c.changedBy ?? "—"}
                 </span>
                 <span className="history__what">
                   <strong>{c.field}</strong>

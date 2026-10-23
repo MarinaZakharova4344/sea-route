@@ -106,10 +106,11 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
                     {i.reasons[0].action}
                   </p>
                   <div className="attn__foot">
-                    <span className="muted">
-                      {i.manager ?? "Менеджер не назначен"} · обновлена {formatDate(i.updatedAt)}
+                    <span className="attn__who muted">
+                      <span>{i.manager ?? "Менеджер не назначен"}</span>
+                      <span>Обновлена: {formatDate(i.updatedAt)}</span>
                     </span>
-                    <span className={i.margin < 0 ? "neg" : ""}>
+                    <span className={`attn__sum${i.margin < 0 ? " neg" : ""}`}>
                       {formatMoney(i.margin)}
                       {i.isPreliminary ? " *" : ""}
                     </span>
@@ -134,7 +135,7 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
             )}
           </div>
         )}
-        <p className="hint">* маржа предварительная: перевозка ещё не закрыта финансово или по части расходов нет фактической суммы.</p>
+        <p className="hint">* Маржа предварительная: перевозка ещё не закрыта финансово.</p>
       </section>
 
     </>

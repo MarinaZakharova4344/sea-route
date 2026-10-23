@@ -13,9 +13,10 @@ function renderItem(it: DetailItem, i: number) {
   const body = (
     <>
       <span className="ditem__main">
-        <strong>{it.title}</strong>
-        {it.sub && <small>{it.sub}</small>}
-        {it.note && <small className="ditem__note">{it.note}</small>}
+        <strong>{it.title.split(" · ")[0]}</strong>
+        {it.title.includes(" · ") && <small>{it.title.split(" · ").slice(1).join(" · ")}</small>}
+        {it.sub && it.sub.split("\n").map((line, k) => <small key={`s${k}`}>{line}</small>)}
+        {it.note && it.note.split("\n").map((line, k) => <small key={`n${k}`} className="ditem__note">{line}</small>)}
       </span>
       <span className={`ditem__value ${it.tone ? TONE[it.tone] : ""}`}>{it.valueText}</span>
       {it.href && (
@@ -89,10 +90,18 @@ export default function DetailView({
         page.groups.map((g) => (
           <section key={g.title} className="dgroup" aria-label={g.title}>
             <div className="section-head">
-              <h2>{g.title}</h2>
+              <h2>{g.title.split(" · ")[0]}</h2>
               {g.totalText && <span className="dgroup__total">{g.totalText}</span>}
             </div>
-            {g.sub && <p className="hint hint--top">{g.sub}</p>}
+            {(g.sub || g.title.includes(" · ")) && (
+              <p className="hint hint--top">
+                {[...(g.title.includes(" · ") ? [g.title.split(" · ").slice(1).join(" · ")] : []), ...(g.sub ? g.sub.split("\n") : [])].map((line, k) => (
+                  <span key={k} className="hint__line">
+                    {line}
+                  </span>
+                ))}
+              </p>
+            )}
             <ul className="ditems">{g.items.slice(0, SHOWN).map((it, i) => renderItem(it, i))}</ul>
             {g.items.length > SHOWN && (
               <details className="ditems-more">

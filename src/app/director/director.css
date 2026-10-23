@@ -2243,3 +2243,34 @@ a:hover .app .more-link,
 .app .hero-card__big .pos {
   color: var(--good);
 }
+
+/* низ карточки перевозки: менеджер и дата обновления в две строки, сумма справа в одну строку */
+.app .attn__foot {
+  align-items: flex-end;
+}
+
+.app .attn__who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.app .attn__sum {
+  flex: none;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+/* крупное число «перевозок требуют вашего внимания» красное */
+.app .hero-card__value {
+  color: var(--bad);
+}
+
+/* номер перевозки, клиент, направление: каждый на своей строке во всех списках перевозок */
+.app .contrib__client {
+  display: block;
+}
+
+.app .hint__line {
+  display: block;
+}

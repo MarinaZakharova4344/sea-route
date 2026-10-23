@@ -44,7 +44,7 @@ describe("подробности «Сегодня»", () => {
     const d = dt.getAttentionDetail(db, "receivables", TODAY);
     const totals = d.groups.map((g) => Number((g.totalText ?? "").replace(/[^\d]/g, "")));
     expect(totals).toEqual([...totals].sort((x, y) => y - x));
-    expect(d.groups[0].items[0].sub).toMatch(/срок оплаты был \d\d\.\d\d\.\d{4}/);
+    expect(d.groups[0].items[0].sub).toMatch(/Срок оплаты: \d\d\.\d\d\.\d{4}/);
   });
 
   it("«Мы не заплатили подрядчикам»: совпадает с плиткой", () => {
@@ -59,7 +59,7 @@ describe("подробности «Сегодня»", () => {
     const d = dt.getAttentionDetail(db, "overrun", TODAY);
     expect(d.summary[0].value).toBe(fmt.formatMoney(a.overrunExtra));
     const first = d.groups[0].items[0];
-    expect(first.sub).toMatch(/план .+, факт /);
+    expect(first.sub).toMatch(/План: .+\nФакт: /);
     expect(first.valueText.startsWith("+")).toBe(true);
   });
 
@@ -84,7 +84,7 @@ describe("подробности «Сегодня»", () => {
     const d = dt.getAttentionDetail(db, "delay", TODAY);
     const days = d.groups[0].items.map((i) => Number(i.valueText.replace(/\D/g, "")));
     expect(days).toEqual([...days].sort((x, y) => y - x));
-    expect(d.groups[0].items[0].sub).toContain("должна была прибыть");
+    expect(d.groups[0].items[0].sub).toContain("Должна была прибыть:");
     expect(d.groups[0].items[0].note).toContain("Ответственный:");
   });
 

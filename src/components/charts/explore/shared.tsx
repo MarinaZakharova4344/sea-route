@@ -170,10 +170,10 @@ function DrillInner({
             <li key={`${o.id}-${o.note ?? ""}`}>
               <Link href={`/director/shipments/${o.id}`} className="drill__row">
                 <span className="drill__main">
-                  <strong>{o.number}</strong> {o.client ?? "Клиент не указан"}
-                  <small>
-                    {o.direction ?? "направление не указано"} · {o.statusLabel}
-                  </small>
+                  <strong>{o.number}</strong>
+                  <span className="contrib__client">{o.client ?? "Клиент не указан"}</span>
+                  <small>{o.direction ?? "направление не указано"}</small>
+                  <small>{o.statusLabel}</small>
                 </span>
                 {o.note && <span className="drill__note">{o.note}</span>}
                 <span className="drill__chev" aria-hidden="true">

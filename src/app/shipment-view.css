@@ -67,9 +67,10 @@
 
 .sv__nums {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
+
 
 .sv__nums div {
   display: flex;
@@ -122,7 +123,8 @@
 
 .sv__line-sum {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 2px;
   margin-top: 4px;
   font-size: 13px;
   color: var(--muted);
@@ -165,4 +167,30 @@
 .history__time {
   font-size: 12px;
   color: var(--muted);
+}
+
+/* на телефоне доход, расходы и маржа идут строками: суммы не помещаются в три колонки и вылезали за блок */
+@media (max-width: 560px) {
+  .sv__nums {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sv__nums div {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .sv__nums strong {
+    white-space: nowrap;
+  }
+}
+
+/* значения в несколько строк (план и факт, дата и автор): каждая строка отдельно, по правому краю */
+.sv__multi {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
 }

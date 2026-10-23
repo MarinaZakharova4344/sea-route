@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useInstall } from "./install";
 
 /**
@@ -10,11 +10,22 @@ import { useInstall } from "./install";
 export default function InstallButton() {
   const { installed, canPrompt, ios, install } = useInstall();
   const [help, setHelp] = useState(false);
+  const box = useRef<HTMLSpanElement>(null);
+
+  // подсказка закрывается нажатием на любое другое место экрана
+  useEffect(() => {
+    if (!help) return;
+    const close = (e: MouseEvent) => {
+      if (!box.current?.contains(e.target as Node)) setHelp(false);
+    };
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [help]);
 
   if (installed) return null;
 
   return (
-    <span className="install">
+    <span className="install" ref={box}>
       <button type="button" className="btn--text install__btn" onClick={() => (canPrompt ? install() : setHelp((v) => !v))} aria-label="Установить приложение" aria-expanded={help}>
         <svg className="install__icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />

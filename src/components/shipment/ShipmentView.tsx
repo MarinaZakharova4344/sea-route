@@ -31,16 +31,16 @@ export default function ShipmentView({ s }: { s: Shipment }) {
           </div>
           <div>
             <dt>Отправление</dt>
-            <dd>
-              план {formatDate(s.plannedDeparture)}
-              {s.actualDeparture && <>, факт {formatDate(s.actualDeparture)}</>}
+            <dd className="sv__multi">
+              <span>План: {formatDate(s.plannedDeparture)}</span>
+              {s.actualDeparture && <span>Факт: {formatDate(s.actualDeparture)}</span>}
             </dd>
           </div>
           <div>
             <dt>Прибытие</dt>
-            <dd>
-              план {formatDate(s.plannedArrival)}
-              {s.actualArrival && <>, факт {formatDate(s.actualArrival)}</>}
+            <dd className="sv__multi">
+              <span>План: {formatDate(s.plannedArrival)}</span>
+              {s.actualArrival && <span>Факт: {formatDate(s.actualArrival)}</span>}
             </dd>
           </div>
           <div>
@@ -49,9 +49,9 @@ export default function ShipmentView({ s }: { s: Shipment }) {
           </div>
           <div>
             <dt>Сведения обновлены</dt>
-            <dd>
-              {formatDateTime(s.updatedAt)}
-              {s.updatedBy && <>, {s.updatedBy}</>}
+            <dd className="sv__multi">
+              <span>{formatDateTime(s.updatedAt)}</span>
+              {s.updatedBy && <span>{s.updatedBy}</span>}
             </dd>
           </div>
         </dl>
@@ -73,15 +73,22 @@ export default function ShipmentView({ s }: { s: Shipment }) {
                   {l.isUnplanned && <span className="chip chip--overrun">внеплановый</span>}
                 </div>
                 <div className="sv__line-sub">
-                  {l.counterpartyName ?? (l.kind === "income" ? s.client?.name : null) ?? "—"} · {PAY[l.paymentStatus]}
-                  {l.dueDate && <> · срок {formatDate(l.dueDate)}</>}
+                  {l.counterpartyName ?? (l.kind === "income" ? s.client?.name : null) ?? "—"}
+                  <br />
+                  {PAY[l.paymentStatus]}
+                  {l.dueDate && (
+                    <>
+                      <br />
+                      Срок: {formatDate(l.dueDate)}
+                    </>
+                  )}
                 </div>
                 <div className="sv__line-sum">
                   <span>
-                    план <strong>{formatMoney(l.plannedAmount)}</strong>
+                    План: <strong>{formatMoney(l.plannedAmount)}</strong>
                   </span>
                   <span>
-                    факт <strong>{l.actualAmount === null ? "ещё нет" : formatMoney(l.actualAmount)}</strong>
+                    Факт: <strong>{l.actualAmount === null ? "ещё нет" : formatMoney(l.actualAmount)}</strong>
                   </span>
                 </div>
               </li>
@@ -99,7 +106,12 @@ export default function ShipmentView({ s }: { s: Shipment }) {
             {s.containers.map((c) => (
               <li key={c.id}>
                 {c.number ?? <span className="muted">номер не указан</span>}
-                {c.type && <> · {c.type === "40HC" ? "40' HC" : `${c.type}'`}</>}
+                {c.type && (
+                  <>
+                    <br />
+                    Тип: {c.type === "40HC" ? "40' HC" : `${c.type}'`}
+                  </>
+                )}
               </li>
             ))}
           </ul>

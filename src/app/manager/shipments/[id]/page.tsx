@@ -37,14 +37,24 @@ export default async function ManagerShipment({ params }: { params: Promise<{ id
           <h1 className="page__title">{s.number}</h1>
           <p className="page__sub">
             {s.client?.name ?? "Клиент не указан"}
-            {s.direction ? ` · ${s.direction.origin} → ${s.direction.destination}` : ""}
+            {s.direction && (
+              <>
+                <br />
+                {s.direction.origin} → {s.direction.destination}
+              </>
+            )}
           </p>
         </div>
         <StatusBadge status={s.status} label={s.statusLabel} />
       </div>
       <p className="mpage__meta">
-        Сведения обновлены {formatDateTime(s.updatedAt)}
-        {s.updatedBy ? `, ${s.updatedBy}` : ""}
+        Сведения обновлены: {formatDateTime(s.updatedAt)}
+        {s.updatedBy && (
+          <>
+            <br />
+            {s.updatedBy}
+          </>
+        )}
       </p>
 
       <FinanceActions shipmentId={s.id} status={s.status} financeClosedAt={s.financeClosedAt} />

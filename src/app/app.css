@@ -1163,3 +1163,53 @@ select.control option {
 .install-prompt .btn--primary:hover {
   background: #123a80;
 }
+
+/* подсказка кнопки «Установить» открывается внутри тёмной шапки: текст в ней тёмный на белом */
+.app .install__help {
+  --ink: #0b1a4a;
+  --muted: #4a5a7c;
+  color: #0b1a4a;
+  line-height: 1.4;
+}
+
+/* ---------- Карточка перевозки: правила, которые должны работать сразу (дублируют shipment-view.css) ---------- */
+
+/* план и факт, дата и имя: каждая строка отдельно, по правому краю */
+.sv__multi {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.sv__multi > span {
+  display: block;
+}
+
+.sv__line-sum {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sv__nums {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* на телефоне доход, расходы и маржа идут строками и не вылезают за блок */
+@media (max-width: 560px) {
+  .sv__nums {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sv__nums div {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .sv__nums strong {
+    white-space: nowrap;
+  }
+}
