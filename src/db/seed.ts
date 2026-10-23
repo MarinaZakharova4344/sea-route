@@ -438,7 +438,31 @@ function generateShipments(ids: { clients: number[]; counterparties: Record<stri
 
 // ---------- запись в БД ----------
 
+/**
+ * Дата поступления заказа для демо: не в будущем и не в выходные (заказы приходят в рабочие дни), а у самых новых
+ * забронированных и черновиков несколько заказов сегодня и вчера, чтобы на графиках были «сегодня» и «вчера».
+ * Случайные числа здесь не используются, поэтому остальные демо-данные не меняются.
+ */
+let freshToday = 0;
+let freshYesterday = 0;
+function demoCreated(base: Date, status: string, i: number): Date {
+  let day = base > TODAY ? addDays(TODAY, -(i % 7)) : base;
+  if (status === "booked" || status === "draft") {
+    if (freshToday < 2) {
+      freshToday++;
+      day = TODAY;
+    } else if (freshYesterday < 4) {
+      freshYesterday++;
+      day = addDays(TODAY, -1);
+    }
+  }
+  while (day.getUTCDay() === 0 || day.getUTCDay() === 6) day = addDays(day, -1);
+  return day;
+}
+
 export function seed(db: Database.Database): { shipments: number; lines: number } {
+  freshToday = 0;
+  freshYesterday = 0;
   const run = db.transaction(() => {
     for (const t of ["change_log", "shipment_metrics", "finance_lines", "containers", "shipments", "counterparties", "directions", "clients", "users"]) {
       db.prepare(`DELETE FROM ${t}`).run();
@@ -479,7 +503,7 @@ export function seed(db: Database.Database): { shipments: number; lines: number 
 
     let lineCount = 0;
     ships.forEach((s, i) => {
-      const created = s.plannedDep ? addDays(s.plannedDep, -int(5, 14)) : s.updatedAt;
+      const created = demoCreated(s.plannedDep ? addDays(s.plannedDep, -int(5, 14)) : s.updatedAt, s.status, i);
       const managerId = s.managerIdx === null ? null : users[s.managerIdx];
       const id = Number(insShip.run(
         `SR-${String(i + 1).padStart(4, "0")}`,
