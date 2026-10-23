@@ -19,7 +19,7 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover" as const,
-  themeColor: "#0a1a45",
+  themeColor: "#ffffff",
 };
 
 const INSTALL_CAPTURE =

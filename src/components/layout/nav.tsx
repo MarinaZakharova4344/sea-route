@@ -8,7 +8,7 @@ import { onTrailChange, previousPages } from "@/components/pwa/ScrollMemory";
 export interface NavItem {
   href: string;
   label: string;
-  icon: "ship" | "bell" | "bars" | "trend";
+  icon: "ship" | "bell" | "bars" | "trend" | "chart";
   /** Адреса, при которых вкладка считается активной (по началу пути). */
   match: string[];
 }
@@ -33,6 +33,12 @@ const ICONS: Record<NavItem["icon"], ReactNode> = {
     </>,
   ),
   bars: svg(<path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />),
+  chart: svg(
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 4v8h8" />
+    </>,
+  ),
   trend: svg(
     <>
       <path d="M3 17l6-6 4 4 8-9" />

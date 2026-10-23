@@ -13,7 +13,7 @@
 }
 
 .mpage .back:hover {
-  color: #fff !important;
+  color: var(--ink) !important;
 }
 
 .mpage__head {
@@ -78,7 +78,7 @@
 .field__label {
   font-size: 13px;
   font-weight: 500;
-  color: #cfe0f2;
+  color: var(--muted);
 }
 
 .field .control {
@@ -113,7 +113,7 @@
 }
 
 .linkbtn:hover {
-  color: #fff;
+  color: var(--ink);
   text-decoration: underline;
 }
 
@@ -122,7 +122,7 @@
   flex-wrap: wrap;
   gap: 10px;
   padding: 12px;
-  background: #0a1242;
+  background: #eef4fb;
   border-radius: 12px;
 }
 
@@ -174,7 +174,7 @@ fieldset:disabled .control {
 
 .crow {
   padding: 14px;
-  background: #0a1242;
+  background: #eef4fb;
   border-radius: 14px;
 }
 
@@ -194,7 +194,7 @@ fieldset:disabled .control {
 
 .lcard {
   padding: 16px;
-  background: #0a1242;
+  background: #eef4fb;
   border-radius: 14px;
   border-left: 4px solid var(--blue);
 }
@@ -246,7 +246,7 @@ fieldset:disabled .control {
   margin-bottom: 16px;
   padding: 16px 18px;
   background: var(--glass);
-  border: 1px solid rgba(169, 193, 232, 0.2);
+  border: 1px solid rgba(11, 26, 74, 0.12);
   border-left: 4px solid var(--link);
   border-radius: 14px;
 }
@@ -280,14 +280,14 @@ fieldset:disabled .control {
 .fin__problem {
   flex-basis: 100%;
   padding: 12px 14px;
-  background: rgba(255, 138, 122, 0.1);
+  background: rgba(214, 69, 69, 0.1);
   border-left: 3px solid var(--bad);
   border-radius: 10px;
   font-size: 13.5px;
 }
 
 .fin__problem--warn {
-  background: rgba(255, 195, 122, 0.1);
+  background: rgba(242, 140, 40, 0.1);
   border-left-color: var(--warn);
 }
 
