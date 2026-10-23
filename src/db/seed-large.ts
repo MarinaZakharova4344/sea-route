@@ -6,9 +6,9 @@
  *
  * Команда стирает текущие данные так же, как `npm run db:seed`. Вернуть обычный набор: `npm run db:seed`.
  */
-import { applySchema, openDb } from "./index";
+import { applySchema, openDb } from "./";
 import { seed } from "./seed";
-import { recalcAll } from "../lib/recalc";
+import { recalcAll } from "../lib/calc/recalc";
 import { todayIso } from "../lib/dates";
 
 function rng(seed: number) {

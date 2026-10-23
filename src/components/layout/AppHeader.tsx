@@ -3,7 +3,7 @@ import BrandIcon from "./BrandIcon";
 import ConnectionBanner from "@/components/pwa/ConnectionBanner";
 import InstallButton from "@/components/pwa/InstallButton";
 import { HeaderNav, TabBar, type NavItem } from "./nav";
-import LogoutButton from "@/app/LogoutButton";
+import LogoutButton from "@/components/layout/LogoutButton";
 
 export default function AppHeader({
   userName,

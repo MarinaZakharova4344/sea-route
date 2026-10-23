@@ -9,18 +9,18 @@ const NOW = new Date(`${TODAY}T14:05:00Z`);
 
 let applySchema: typeof import("@/db").applySchema;
 let openDb: typeof import("@/db").openDb;
-let recalcAll: typeof import("@/lib/recalc").recalcAll;
+let recalcAll: typeof import("@/lib/calc/recalc").recalcAll;
 let an: typeof import("./analytics");
 let dt: typeof import("./analytics-details");
-let fmt: typeof import("./format");
+let fmt: typeof import("../format");
 let db: Database.Database;
 
 beforeAll(async () => {
   ({ applySchema, openDb } = await import("@/db"));
-  ({ recalcAll } = await import("@/lib/recalc"));
+  ({ recalcAll } = await import("@/lib/calc/recalc"));
   an = await import("./analytics");
   dt = await import("./analytics-details");
-  fmt = await import("./format");
+  fmt = await import("../format");
   db = openDb(":memory:");
   applySchema(db);
   (await import("@/db/seed")).seed(db);

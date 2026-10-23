@@ -164,7 +164,7 @@ function LineFields({
       <Field label="План, ₽" error={errors.plannedAmount}>
         <input className="control" inputMode="numeric" value={d.plannedAmount} onChange={(e) => set({ plannedAmount: e.target.value })} />
       </Field>
-      <Field label="Факт, ₽" error={errors.actualAmount} hint="Пусто, пока нет счёта">
+      <Field label="Факт, ₽" error={errors.actualAmount}>
         <input className="control" inputMode="numeric" value={d.actualAmount} onChange={(e) => set({ actualAmount: e.target.value })} />
       </Field>
       <Field label="Оплата" error={errors.paymentStatus}>
@@ -185,7 +185,7 @@ function LineFields({
         <input className="control" type="date" value={d.dueDate} onChange={(e) => set({ dueDate: e.target.value })} />
       </Field>
       {d.paymentStatus !== "unpaid" && (
-        <Field label="Дата оплаты" error={errors.paidAt} hint="Если пусто, будет сегодняшняя">
+        <Field label="Дата оплаты" error={errors.paidAt}>
           <input className="control" type="date" value={d.paidAt} onChange={(e) => set({ paidAt: e.target.value })} />
         </Field>
       )}
@@ -336,7 +336,6 @@ export default function LinesEditor({ shipmentId, lines, counterparties: initial
   const addCounterparty = (c: Counterparty) => setCounterparties((list) => [...list.filter((x) => x.id !== c.id), c].sort((a, b) => a.name.localeCompare(b.name, "ru")));
   return (
     <div>
-      {lines.length === 0 && !adding ? <p className="muted">Строк пока нет. Расходы можно вносить по мере поступления счетов.</p> : null}
       <ul className="llist">
         {lines.map((l) => (
           <LineCard key={`${l.id}-${l.plannedAmount}-${l.actualAmount}-${l.paymentStatus}-${l.dueDate}-${l.paidAt}-${l.description}-${l.counterpartyId}-${l.isUnplanned}`} line={l} counterparties={counterparties} locked={locked} onCounterpartyAdded={addCounterparty} />

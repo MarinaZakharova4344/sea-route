@@ -6,7 +6,7 @@ import type Database from "better-sqlite3";
 import { ApiError } from "../api";
 import type { AuthUser } from "../auth/authorize";
 import { localDay, toDay } from "../dates";
-import { FINANCE_CLOSE_FIELD, PLANNED_ARRIVAL_FIELD } from "../metrics";
+import { FINANCE_CLOSE_FIELD, PLANNED_ARRIVAL_FIELD } from "../calc/metrics";
 import type { ContainerInput, LineInput, ShipmentInput } from "./schemas";
 import type { z } from "zod";
 import type { ListQuery } from "./schemas";

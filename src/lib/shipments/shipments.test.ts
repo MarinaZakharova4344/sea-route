@@ -12,7 +12,7 @@ const later = (minutes: number) => new Date(T0.getTime() + minutes * 60_000);
 let db: Database.Database;
 let svc: typeof import("./service");
 let schemas: typeof import("./schemas");
-let recalc: typeof import("@/lib/recalc");
+let recalc: typeof import("@/lib/calc/recalc");
 let manager: AuthUser;
 let ids: { client: number; direction: number; carrier: number; terminal: number };
 
@@ -21,7 +21,7 @@ beforeAll(async () => {
   (await import("@/db/seed")).seed(db);
   svc = await import("./service");
   schemas = await import("./schemas");
-  recalc = await import("@/lib/recalc");
+  recalc = await import("@/lib/calc/recalc");
   manager = db.prepare("SELECT id, email, name, role FROM users WHERE email = 'ivan@searoute.test'").get() as AuthUser;
   ids = {
     client: (db.prepare("SELECT id FROM clients LIMIT 1").get() as { id: number }).id,

@@ -2,8 +2,8 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import { json } from "@/lib/auth/authorize";
 import { ApiError, route } from "@/lib/api";
-import { DYNAMICS_KINDS, getDynamicsDetail, type DynamicsKind } from "@/lib/analytics-details";
-import { ensureFresh } from "@/lib/recalc";
+import { DYNAMICS_KINDS, getDynamicsDetail, type DynamicsKind } from "@/lib/analytics/analytics-details";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 type Ctx = { params: Promise<{ kind: string }> };
 

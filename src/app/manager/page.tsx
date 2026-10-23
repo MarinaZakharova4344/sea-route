@@ -4,7 +4,7 @@ import StatusBadge from "@/components/shipment/StatusBadge";
 import ListFilters from "@/components/manager/ListFilters";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/server";
-import { ensureFresh } from "@/lib/recalc";
+import { ensureFresh } from "@/lib/calc/recalc";
 import { ListQuery } from "@/lib/shipments/schemas";
 import { listShipments, referenceData } from "@/lib/shipments/service";
 

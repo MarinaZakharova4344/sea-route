@@ -3,10 +3,10 @@ import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
 import { AgingChart, StatusDonut } from "@/components/charts/explore/Panels";
 import StatusBadge from "@/components/shipment/StatusBadge";
-import { getAttention } from "@/lib/analytics";
-import { getOverview } from "@/lib/overview";
+import { getAttention } from "@/lib/analytics/analytics";
+import { getOverview } from "@/lib/analytics/overview";
 import { formatDate, formatMoney, formatMoneyShort } from "@/lib/format";
-import { ensureFresh } from "@/lib/recalc";
+import { ensureFresh } from "@/lib/calc/recalc";
 import { STATUS_LABELS } from "@/lib/shipments/service";
 
 type Params = Promise<Record<string, string | string[] | undefined>>;

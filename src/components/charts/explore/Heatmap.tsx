@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { DayPoint } from "@/lib/overview";
+import type { DayPoint } from "@/lib/analytics/overview";
 import { dayLong, ordersWord } from "./shared";
 
 const HEAD = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];

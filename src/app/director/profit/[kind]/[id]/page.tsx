@@ -2,9 +2,9 @@ import Link from "next/link";
 import BackLink from "@/components/layout/BackLink";
 import { notFound } from "next/navigation";
 import { getDb } from "@/db";
-import { getGroupDetail, type GroupBy } from "@/lib/analytics";
+import { getGroupDetail, type GroupBy } from "@/lib/analytics/analytics";
 import { formatDate, formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
-import { ensureFresh } from "@/lib/recalc";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 type Props = { params: Promise<{ kind: string; id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 

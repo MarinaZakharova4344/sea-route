@@ -2,8 +2,8 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import { json } from "@/lib/auth/authorize";
 import { route } from "@/lib/api";
-import { getProfit } from "@/lib/analytics";
-import { ensureFresh } from "@/lib/recalc";
+import { getProfit } from "@/lib/analytics/analytics";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 const Query = z.object({
   days: z.coerce.number().int().min(7).max(366).default(90),

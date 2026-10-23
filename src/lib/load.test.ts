@@ -94,9 +94,9 @@ describe("реалистичная нагрузка: 3000 перевозок з�
     const db = dbMod.openDb(":memory:");
     dbMod.applySchema(db);
     build(db, 3000);
-    const { recalcAll } = await import("./recalc");
-    const an = await import("./analytics");
-    const det = await import("./analytics-details");
+    const { recalcAll } = await import("./calc/recalc");
+    const an = await import("./analytics/analytics");
+    const det = await import("./analytics/analytics-details");
 
     // Запас в десятки раз больше замеренного (1-70 мс): тест ловит только серьёзную деградацию, а не шум машины.
     const time = <T,>(label: string, fn: () => T): T => {

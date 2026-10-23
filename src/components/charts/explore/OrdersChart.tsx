@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import type { DayPoint, ForecastPoint } from "@/lib/overview";
+import type { DayPoint, ForecastPoint } from "@/lib/analytics/overview";
 import { VIZ } from "../charts";
 import { Tip, dayLong, ordersWord } from "./shared";
 

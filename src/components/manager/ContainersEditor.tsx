@@ -104,7 +104,6 @@ export default function ContainersEditor({ shipmentId, containers, locked }: { s
 
   return (
     <div>
-      {containers.length === 0 ? <p className="muted">Контейнеры пока не добавлены. Номера можно внести позже.</p> : null}
       <ul className="clist">
         {containers.map((c) => (
           <Row key={`${c.id}-${c.number}-${c.type}-${c.weightKg}`} c={c} locked={locked} />

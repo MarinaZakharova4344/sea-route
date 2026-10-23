@@ -7,7 +7,7 @@
  *   npm run users -- enable имя@компания.ru
  * Если пароль не указан, создаётся случайный и показывается один раз.
  */
-import { openDb, applySchema } from "./index";
+import { openDb, applySchema } from "./";
 import { UserError, addUser, listUsers, setDisabled, setPassword } from "../lib/auth/users";
 
 const [cmd, ...args] = process.argv.slice(2);

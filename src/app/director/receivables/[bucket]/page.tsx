@@ -4,8 +4,8 @@ import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
 import BackLink from "@/components/layout/BackLink";
 import { formatDate, formatMoney, formatMoneyShort } from "@/lib/format";
-import { getReceivablesBucket, type ReceivableRow } from "@/lib/overview";
-import { ensureFresh } from "@/lib/recalc";
+import { getReceivablesBucket, type ReceivableRow } from "@/lib/analytics/overview";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 const SHOWN = 100;
 

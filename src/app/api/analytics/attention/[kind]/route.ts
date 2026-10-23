@@ -1,8 +1,8 @@
 import { getDb } from "@/db";
 import { json } from "@/lib/auth/authorize";
 import { ApiError, route } from "@/lib/api";
-import { ATTENTION_KINDS, getAttentionDetail, type AttentionKind } from "@/lib/analytics-details";
-import { ensureFresh } from "@/lib/recalc";
+import { ATTENTION_KINDS, getAttentionDetail, type AttentionKind } from "@/lib/analytics/analytics-details";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 type Ctx = { params: Promise<{ kind: string }> };
 

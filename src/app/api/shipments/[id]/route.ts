@@ -1,7 +1,7 @@
 import { getDb } from "@/db";
 import { json } from "@/lib/auth/authorize";
 import { idParam, readJson, route } from "@/lib/api";
-import { ensureFresh } from "@/lib/recalc";
+import { ensureFresh } from "@/lib/calc/recalc";
 import { ShipmentInput } from "@/lib/shipments/schemas";
 import { getShipment, updateShipment } from "@/lib/shipments/service";
 

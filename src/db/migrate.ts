@@ -1,4 +1,4 @@
-import { applySchema, openDb } from "./index";
+import { applySchema, openDb } from "./";
 
 const db = openDb();
 applySchema(db);

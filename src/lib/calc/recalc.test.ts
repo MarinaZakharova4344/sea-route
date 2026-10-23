@@ -8,8 +8,8 @@ let db: Database.Database;
 beforeAll(async () => {
   // Дата для демо-данных задаётся до загрузки модуля seed.
   process.env.SEED_TODAY = TODAY;
-  const { openDb, applySchema } = await import("../db");
-  const { seed } = await import("../db/seed");
+  const { openDb, applySchema } = await import("../../db");
+  const { seed } = await import("../../db/seed");
   const { recalcAll } = await import("./recalc");
   db = openDb(":memory:");
   applySchema(db);

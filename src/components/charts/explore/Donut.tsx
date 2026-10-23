@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Bucket } from "@/lib/overview";
+import type { Bucket } from "@/lib/analytics/overview";
 
 const COLORS: Record<string, string> = {
   draft: "#9aa9c4",

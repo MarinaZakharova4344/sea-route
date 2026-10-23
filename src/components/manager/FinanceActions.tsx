@@ -55,7 +55,6 @@ export default function FinanceActions({ shipmentId, status, financeClosedAt }: 
       <div className="fin fin--closed" role="status">
         <div>
           <strong>Закрыта финансово {formatDate(financeClosedAt)}</strong>
-          <span>Результат окончательный. Чтобы внести изменения, откройте перевозку заново.</span>
         </div>
         <button type="button" className="btn btn--ghost" onClick={reopen} disabled={busy}>
           Открыть заново
@@ -70,11 +69,7 @@ export default function FinanceActions({ shipmentId, status, financeClosedAt }: 
     <div className="fin">
       <div>
         <strong>Финансовое закрытие</strong>
-        <span>
-          {eligible
-            ? "Когда по всем строкам есть фактические суммы, закройте перевозку: результат станет окончательным."
-            : "Закрыть можно после доставки (статус «Прибыла») или отмены перевозки."}
-        </span>
+        {!eligible && <span>Доступно после статуса «Прибыла» или «Отменена».</span>}
       </div>
       <button type="button" className="btn btn--accent" onClick={() => { confirmed.current = {}; void close(); }} disabled={!eligible || busy}>
         {busy ? "Закрываем…" : "Закрыть финансово"}
@@ -89,14 +84,14 @@ export default function FinanceActions({ shipmentId, status, financeClosedAt }: 
               <li key={p.id}>{p.description}</li>
             ))}
           </ul>
-          <span>Внесите факт (сумму по счёту) в блоке «Доходы и расходы» и повторите.</span>
+          <span>Внесите факт в блоке «Доходы и расходы».</span>
         </div>
       )}
 
       {noIncome && (
         <div className="fin__problem fin__problem--warn" role="alert">
           <strong>В перевозке нет дохода</strong>
-          <span>Нет ни одной строки дохода (счёта клиенту), поэтому результат будет убытком. Возможно, счёт забыли внести.</span>
+          <span>Результат будет убытком: нет ни одного счёта клиенту.</span>
           <div className="fin__btns">
             <button type="button" className="btn" onClick={() => close({ confirmNoIncome: true })} disabled={busy}>
               Закрыть без дохода
@@ -118,7 +113,6 @@ export default function FinanceActions({ shipmentId, status, financeClosedAt }: 
               </li>
             ))}
           </ul>
-          <span>Если так и должно быть, подтвердите закрытие.</span>
           <div className="fin__btns">
             <button type="button" className="btn" onClick={() => close({ confirmUnpaid: true })} disabled={busy}>
               Закрыть всё равно

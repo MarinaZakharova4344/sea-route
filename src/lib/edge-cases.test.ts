@@ -12,16 +12,16 @@ const NOW = new Date("2026-11-30T09:00:00Z");
 
 let db: Database.Database;
 let svc: typeof import("./shipments/service");
-let analytics: typeof import("./analytics");
-let recalc: typeof import("./recalc");
+let analytics: typeof import("./analytics/analytics");
+let recalc: typeof import("./calc/recalc");
 let manager: AuthUser;
 let ids: { client: number; direction: number; carrier: number; terminal: number };
 
 beforeAll(async () => {
   db = (await import("@/db")).getDb();
   svc = await import("./shipments/service");
-  analytics = await import("./analytics");
-  recalc = await import("./recalc");
+  analytics = await import("./analytics/analytics");
+  recalc = await import("./calc/recalc");
   // Пустая база: в ней только справочники и пользователь, поэтому суммы по периодам считаются «руками».
   db.prepare("INSERT INTO users (email, name, role, password_hash) VALUES ('m@test', 'Менеджер', 'manager', 'x')").run();
   db.prepare("INSERT INTO clients (name) VALUES ('Клиент')").run();
@@ -157,7 +157,7 @@ describe("случай 3: частичная оплата без даты", () =
 describe("случай 4: менеджер передвигает плановую дату, и опоздание «исчезает»", () => {
   // Почему выбран: исходная боль руководителя. Если считать опоздание только от текущего плана, перенос срока прячет задержку.
   it("перенос срока виден в аналитике, первое заполнение даты переносом не считается", async () => {
-    const det = await import("./analytics-details");
+    const det = await import("./analytics/analytics-details");
     const id = shipment("2026-10-20", "2026-11-05", "in_transit");
     // груз в пути, срок был 05.11, к 30.11 уже опаздывает; менеджер передвигает срок на 25.11 («всё под контролем»)
     svc.updateShipment(db, manager, id, { plannedArrival: "2026-12-05", expect: { plannedArrival: "2026-11-05" } }, NOW);

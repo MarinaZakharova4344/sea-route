@@ -2,7 +2,7 @@ import BackLink from "@/components/layout/BackLink";
 import { notFound } from "next/navigation";
 import { getDb } from "@/db";
 import ShipmentView from "@/components/shipment/ShipmentView";
-import { ensureFresh } from "@/lib/recalc";
+import { ensureFresh } from "@/lib/calc/recalc";
 import { getShipment } from "@/lib/shipments/service";
 
 export default async function DirectorShipment({ params }: { params: Promise<{ id: string }> }) {

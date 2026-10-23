@@ -10,9 +10,9 @@ let predictOrders: typeof import("./overview").predictOrders;
 
 beforeAll(async () => {
   process.env.SEED_TODAY = TODAY;
-  const { openDb, applySchema } = await import("../db");
-  const { seed } = await import("../db/seed");
-  const { recalcAll } = await import("./recalc");
+  const { openDb, applySchema } = await import("../../db");
+  const { seed } = await import("../../db/seed");
+  const { recalcAll } = await import("../calc/recalc");
   const mod = await import("./overview");
   predictOrders = mod.predictOrders;
   db = openDb(":memory:");

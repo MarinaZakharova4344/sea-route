@@ -4,8 +4,8 @@ import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
 import BackLink from "@/components/layout/BackLink";
 import { STATUS_LABELS } from "@/lib/shipments/service";
-import { STATUS_NOTES, getShipmentsByStatus } from "@/lib/overview";
-import { ensureFresh } from "@/lib/recalc";
+import { STATUS_NOTES, getShipmentsByStatus } from "@/lib/analytics/overview";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 const SHOWN = 100;
 

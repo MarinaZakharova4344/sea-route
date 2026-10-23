@@ -2,8 +2,8 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import { json } from "@/lib/auth/authorize";
 import { ApiError, route } from "@/lib/api";
-import { PROFIT_METRICS, getProfitDetail, type ProfitMetric } from "@/lib/analytics-details";
-import { ensureFresh } from "@/lib/recalc";
+import { PROFIT_METRICS, getProfitDetail, type ProfitMetric } from "@/lib/analytics/analytics-details";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 type Ctx = { params: Promise<{ metric: string }> };
 

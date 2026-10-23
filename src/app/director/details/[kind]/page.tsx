@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getDb } from "@/db";
 import DetailView from "@/components/director/DetailView";
-import { ATTENTION_KINDS, getAttentionDetail, type AttentionKind } from "@/lib/analytics-details";
-import { ensureFresh } from "@/lib/recalc";
+import { ATTENTION_KINDS, getAttentionDetail, type AttentionKind } from "@/lib/analytics/analytics-details";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 export default async function AttentionDetails({ params }: { params: Promise<{ kind: string }> }) {
   const { kind } = await params;

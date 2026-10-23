@@ -2,9 +2,9 @@ import Link from "next/link";
 import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
 import { RevenueMarginBars, SegmentedBar, VIZ } from "@/components/charts/charts";
-import { getPayments, getProfit, getStaleSummary, type GroupBy } from "@/lib/analytics";
+import { getPayments, getProfit, getStaleSummary, type GroupBy } from "@/lib/analytics/analytics";
 import { formatDate, formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
-import { ensureFresh } from "@/lib/recalc";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 type Params = Promise<Record<string, string | string[] | undefined>>;
 

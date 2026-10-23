@@ -1,8 +1,8 @@
 import { getDb } from "@/db";
 import { json } from "@/lib/auth/authorize";
 import { route } from "@/lib/api";
-import { getAttention } from "@/lib/analytics";
-import { ensureFresh } from "@/lib/recalc";
+import { getAttention } from "@/lib/analytics/analytics";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 /** «Сегодня»: что требует внимания. Только для руководителя. */
 export const GET = route(["director"], () => {

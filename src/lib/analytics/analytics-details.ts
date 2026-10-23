@@ -18,9 +18,9 @@ import {
   type MetricRow,
   type ReasonCode,
 } from "./analytics";
-import { diffDays, todayIso } from "./dates";
-import { formatDate, formatMoney, formatPercent } from "./format";
-import { loadThresholds } from "./recalc";
+import { diffDays, todayIso } from "../dates";
+import { formatDate, formatMoney, formatPercent } from "../format";
+import { loadThresholds } from "../calc/recalc";
 
 export interface DetailItem {
   /** Перевозка, к которой ведёт строка (если есть). */

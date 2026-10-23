@@ -6,9 +6,9 @@
  */
 import type Database from "better-sqlite3";
 import { addDaysIso, deliveredIn, directionName, getProfit } from "./analytics";
-import { diffDays, todayIso, toDay } from "./dates";
-import { loadThresholds } from "./recalc";
-import { STATUS_LABELS } from "./shipments/service";
+import { diffDays, todayIso, toDay } from "../dates";
+import { loadThresholds } from "../calc/recalc";
+import { STATUS_LABELS } from "../shipments/service";
 
 export interface OrderRef {
   id: number;

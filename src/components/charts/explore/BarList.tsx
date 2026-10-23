@@ -1,6 +1,6 @@
 "use client";
 
-import type { Bucket } from "@/lib/overview";
+import type { Bucket } from "@/lib/analytics/overview";
 
 const TONES: Record<string, string> = { good: "#1e9e6a", warn: "#f2a33a", bad: "#d64545", neutral: "#4f86d9" };
 

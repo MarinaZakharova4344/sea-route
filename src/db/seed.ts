@@ -10,8 +10,8 @@
  */
 import bcrypt from "bcryptjs";
 import type Database from "better-sqlite3";
-import { applySchema, openDb } from "./index";
-import { recalcAll } from "../lib/recalc";
+import { applySchema, openDb } from "./";
+import { recalcAll } from "../lib/calc/recalc";
 
 export const DEMO_PASSWORD = "demo12345";
 

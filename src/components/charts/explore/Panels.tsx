@@ -2,14 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { Bucket, DayPoint, Overview } from "@/lib/overview";
+import type { Bucket, DayPoint, Overview } from "@/lib/analytics/overview";
 import { formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
 import BarList from "./BarList";
 import Donut from "./Donut";
 import Heatmap from "./Heatmap";
 import MonthLines from "./MonthLines";
 import OrdersChart from "./OrdersChart";
-import { STATUS_NOTES } from "@/lib/status-notes";
+import { STATUS_NOTES } from "@/lib/analytics/status-notes";
 import { ChartCard, DrillPanel, dayLong, ordersWord, plural } from "./shared";
 
 const RANGES = [

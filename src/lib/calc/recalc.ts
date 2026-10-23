@@ -1,5 +1,5 @@
 import type Database from "better-sqlite3";
-import { todayIso } from "./dates";
+import { todayIso } from "../dates";
 import { PLANNED_ARRIVAL_FIELD } from "./metrics";
 import {
   computeShipmentMetrics,

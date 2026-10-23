@@ -8,7 +8,7 @@ import ShipmentForm from "@/components/manager/ShipmentForm";
 import { HistorySection, ResultSection } from "@/components/shipment/ShipmentSections";
 import StatusBadge from "@/components/shipment/StatusBadge";
 import { formatDateTime } from "@/lib/format";
-import { ensureFresh } from "@/lib/recalc";
+import { ensureFresh } from "@/lib/calc/recalc";
 import { getShipment, referenceData } from "@/lib/shipments/service";
 
 export default async function ManagerShipment({ params }: { params: Promise<{ id: string }> }) {

@@ -5,9 +5,9 @@
  * Правила описаны в docs/calculations.md.
  */
 import type Database from "better-sqlite3";
-import { diffDays, todayIso } from "./dates";
-import { FINANCE_CLOSE_FIELD } from "./metrics";
-import { loadThresholds } from "./recalc";
+import { diffDays, todayIso } from "../dates";
+import { FINANCE_CLOSE_FIELD } from "../calc/metrics";
+import { loadThresholds } from "../calc/recalc";
 
 // ---------- общее ----------
 

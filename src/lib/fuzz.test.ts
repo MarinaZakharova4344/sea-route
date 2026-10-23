@@ -24,9 +24,9 @@ describe("случайные операции менеджеров", () => {
     const { openDb, applySchema } = await import("@/db");
     const svc = await import("./shipments/service");
     const schemas = await import("./shipments/schemas");
-    const { recalcAll } = await import("./recalc");
-    const an = await import("./analytics");
-    const det = await import("./analytics-details");
+    const { recalcAll } = await import("./calc/recalc");
+    const an = await import("./analytics/analytics");
+    const det = await import("./analytics/analytics-details");
     const { ApiError } = await import("./api");
 
     const db: Database.Database = openDb(":memory:");

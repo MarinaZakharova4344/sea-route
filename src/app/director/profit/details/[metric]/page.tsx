@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getDb } from "@/db";
 import DetailView from "@/components/director/DetailView";
-import { PROFIT_METRICS, getProfitDetail, type ProfitMetric } from "@/lib/analytics-details";
-import { ensureFresh } from "@/lib/recalc";
+import { PROFIT_METRICS, getProfitDetail, type ProfitMetric } from "@/lib/analytics/analytics-details";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 type Props = { params: Promise<{ metric: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 

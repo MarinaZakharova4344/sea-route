@@ -4,11 +4,11 @@ import FreshnessBar from "@/components/director/FreshnessBar";
 import ColumnChart from "@/components/charts/ColumnChart";
 import { ChartCard } from "@/components/charts/explore/shared";
 import { OrdersHero } from "@/components/charts/explore/Panels";
-import { getOverview } from "@/lib/overview";
+import { getOverview } from "@/lib/analytics/overview";
 import { Delta, DivergingBars, axisMoney } from "@/components/charts/charts";
-import { getDynamics } from "@/lib/analytics";
+import { getDynamics } from "@/lib/analytics/analytics";
 import { formatDate, formatMoney, formatMoneyShort, formatPercent } from "@/lib/format";
-import { ensureFresh } from "@/lib/recalc";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 type Params = Promise<Record<string, string | string[] | undefined>>;
 

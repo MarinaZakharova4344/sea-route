@@ -4,8 +4,8 @@ import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
 import BackLink from "@/components/layout/BackLink";
 import { todayIso } from "@/lib/dates";
-import { getOrdersOn, getOverview } from "@/lib/overview";
-import { ensureFresh } from "@/lib/recalc";
+import { getOrdersOn, getOverview } from "@/lib/analytics/overview";
+import { ensureFresh } from "@/lib/calc/recalc";
 
 const dayLong = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("ru-RU", { day: "numeric", month: "long", timeZone: "UTC" });
 const weekdayName = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("ru-RU", { weekday: "long", timeZone: "UTC" });

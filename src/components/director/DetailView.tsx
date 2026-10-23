@@ -1,7 +1,7 @@
 import Link from "next/link";
 import BackLink from "@/components/layout/BackLink";
 import FreshnessBar from "./FreshnessBar";
-import type { DetailItem, DetailPage } from "@/lib/analytics-details";
+import type { DetailItem, DetailPage } from "@/lib/analytics/analytics-details";
 
 const TONE: Record<string, string> = { neg: "ditem__value--neg", pos: "ditem__value--pos", warn: "ditem__value--warn", muted: "ditem__value--muted" };
 
