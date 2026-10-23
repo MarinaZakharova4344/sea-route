@@ -155,7 +155,7 @@ body:has(.login) {
   border-radius: 28px;
   background: #fff;
   border: 1px solid #b4c9e6;
-  border-top: 4px solid var(--accent);
+  border-top: 4px solid #061a44;
   box-shadow: 0 24px 60px rgba(11, 26, 74, 0.18), 0 2px 6px rgba(11, 26, 74, 0.08);
 }
 
