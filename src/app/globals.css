@@ -353,8 +353,8 @@ body:has(.login) {
   margin-top: 10px;
   border: 0;
   border-radius: 14px;
-  background: #123a80;
-  box-shadow: 0 8px 20px rgba(18, 58, 128, 0.32);
+  background: #061a44;
+  box-shadow: 0 8px 20px rgba(6, 26, 68, 0.32);
   color: #fff;
   font: inherit;
   font-size: 17px;

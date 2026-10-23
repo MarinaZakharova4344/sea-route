@@ -130,11 +130,6 @@
   background: #e3edf9;
 }
 
-/* логотип на светлой шапке: плитка того же цвета, что на странице входа */
-.topbar__icon rect:first-of-type {
-  fill: #123a80;
-}
-
 .topbar__spacer {
   flex: 1;
 }
