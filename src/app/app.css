@@ -242,12 +242,12 @@
   color: #fff !important;
   cursor: pointer;
   white-space: nowrap;
-  background: #1f5fbf;
+  background: #061a44;
   transition: background 0.15s;
 }
 
 .btn:hover {
-  background: #174a96;
+  background: #123a80;
 }
 
 .btn:active {
@@ -1212,4 +1212,22 @@ select.control option {
   .sv__nums strong {
     white-space: nowrap;
   }
+}
+
+/* главные кнопки («Новая перевозка», «Найти» и другие основные действия) цвета верхней и нижней панелей */
+.app .btn--primary {
+  background: #061a44;
+}
+
+.app .btn--primary:hover:not(:disabled) {
+  background: #123a80;
+}
+
+/* кнопки создания и сохранения перевозки: тёмно-оранжевые */
+.app .btn--accent {
+  background: #a12b2b;
+}
+
+.app .btn--accent:hover:not(:disabled) {
+  background: #7d1f1f;
 }

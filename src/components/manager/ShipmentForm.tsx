@@ -255,13 +255,13 @@ export default function ShipmentForm({
           <Field label="Отправление: план" error={errors.plannedDeparture}>
             <input className="control" type="date" value={v.plannedDeparture} onChange={set("plannedDeparture")} />
           </Field>
-          <Field label="Отправление: факт" error={errors.actualDeparture} hint="Нужно для статусов «В пути» и «Прибыла»">
+          <Field label="Отправление: факт" error={errors.actualDeparture}>
             <input className="control" type="date" value={v.actualDeparture} onChange={set("actualDeparture")} />
           </Field>
           <Field label="Прибытие: план" error={errors.plannedArrival}>
             <input className="control" type="date" value={v.plannedArrival} onChange={set("plannedArrival")} />
           </Field>
-          <Field label="Прибытие: факт" error={errors.actualArrival} hint="Нужно для статуса «Прибыла»">
+          <Field label="Прибытие: факт" error={errors.actualArrival}>
             <input className="control" type="date" value={v.actualArrival} onChange={set("actualArrival")} />
           </Field>
         </div>
@@ -279,12 +279,11 @@ export default function ShipmentForm({
           </button>
         )}
         {!locked && (
-          <button type="submit" className="btn" disabled={pending}>
+          <button type="submit" className="btn btn--primary" disabled={pending}>
             {pending ? "Сохраняем…" : mode === "new" ? "Создать перевозку" : "Сохранить"}
           </button>
         )}
       </div>
-      {mode === "new" && <p className="field__hint">Можно сохранить неполные сведения и дополнить позже: обязательных полей нет.</p>}
     </form>
   );
 }

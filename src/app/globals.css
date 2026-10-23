@@ -191,6 +191,18 @@ body:has(.login) {
   color: var(--ink-label);
 }
 
+/* стили полей менеджера (manager.css) не должны менять поля входа */
+.login .field {
+  display: block;
+}
+
+.login .field__label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-label);
+}
+
 .field__box {
   position: relative;
 }

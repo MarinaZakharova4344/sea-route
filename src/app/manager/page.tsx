@@ -63,7 +63,7 @@ export default async function ManagerHome({ searchParams }: { searchParams: Para
             )}
           </p>
         </div>
-        <Link href="/manager/shipments/new" className="btn btn--primary">
+        <Link href="/manager/shipments/new" className="btn btn--accent">
           + Новая перевозка
         </Link>
       </div>

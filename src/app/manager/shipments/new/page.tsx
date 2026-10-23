@@ -15,7 +15,6 @@ export default async function NewShipment() {
       <div className="mpage__head">
         <div>
           <h1 className="page__title">Новая перевозка</h1>
-          <p className="page__sub">Заполните то, что известно сейчас. Остальное можно добавить позже.</p>
         </div>
       </div>
       <section className="panel msec">

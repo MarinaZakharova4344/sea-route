@@ -76,7 +76,7 @@ export default function FinanceActions({ shipmentId, status, financeClosedAt }: 
             : "Закрыть можно после доставки (статус «Прибыла») или отмены перевозки."}
         </span>
       </div>
-      <button type="button" className="btn" onClick={() => { confirmed.current = {}; void close(); }} disabled={!eligible || busy}>
+      <button type="button" className="btn btn--accent" onClick={() => { confirmed.current = {}; void close(); }} disabled={!eligible || busy}>
         {busy ? "Закрываем…" : "Закрыть финансово"}
       </button>
       {msg && <p className="msg msg--error">{msg}</p>}
