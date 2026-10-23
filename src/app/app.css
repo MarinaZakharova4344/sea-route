@@ -1152,10 +1152,6 @@ select.control option {
   height: 44px;
 }
 
-.install-prompt .install-prompt__icon rect:first-of-type {
-  fill: #061a44;
-}
-
 .install-prompt .btn--primary {
   background: #061a44;
 }

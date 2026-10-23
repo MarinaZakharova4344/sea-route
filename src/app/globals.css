@@ -114,11 +114,6 @@ body:has(.login) {
   height: 100%;
 }
 
-/* на странице входа плитка логотипа того же цвета, что кнопка «Войти» */
-.login .brand__icon svg rect:first-of-type {
-  fill: #123a80;
-}
-
 .brand__name {
   font-size: 22px;
   font-weight: 700;
@@ -516,7 +511,11 @@ body:has(.login) {
   gap: 12px;
   padding: 24px;
   text-align: center;
-  background: linear-gradient(180deg, #152a5e 0%, #0b1440 50%, #04072f 100%);
+  background: linear-gradient(180deg, #eaf2fc 0%, #dde9f8 55%, #cfe0f5 100%);
+}
+
+body:has(.offline) {
+  background: #dde9f8;
 }
 
 .offline__icon {
@@ -527,13 +526,13 @@ body:has(.login) {
 .offline h1 {
   margin: 8px 0 0;
   font-size: 24px;
-  color: #e8f4fc;
+  color: #0b1a4a;
 }
 
 .offline p {
   max-width: 420px;
   margin: 0;
-  color: #b5c0e0;
+  color: #33436b;
 }
 
 .offline__hint {
@@ -544,7 +543,7 @@ body:has(.login) {
   margin-top: 12px;
   padding: 12px 26px;
   border-radius: 10px;
-  background: #3d8fc9;
+  background: #061a44;
   color: #fff;
   font-weight: 700;
   text-decoration: none;
