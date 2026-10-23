@@ -1,18 +1,11 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser, homeFor } from "@/lib/auth/server";
-import Bubbles from "@/components/layout/Bubbles";
 import BrandIcon from "@/components/layout/BrandIcon";
 import LoginForm from "./LoginForm";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Вход · Морской маршрут" };
 
-/**
- * Пузырьки медленно поднимаются со дна экрана вверх.
- * left: положение по ширине; size: диаметр, px; dur: время подъёма, с;
- * delay: сдвиг старта (отрицательный, чтобы при загрузке пузырьки уже были в разных местах);
- * sway: боковое покачивание, px; o: прозрачность.
- */
 /**
  * Волна: синусоида, повторяющаяся без шва. Слой в 2 раза шире экрана
  * и сдвигается на половину своей ширины, поэтому движение бесконечно.
@@ -34,14 +27,12 @@ export default async function LoginPage() {
     <main className="login">
       <div className="login__scene" aria-hidden="true">
         <svg className="wave wave--back" viewBox="0 0 2880 200" preserveAspectRatio="none">
-          <path d={wavePath(80, 20, 1440)} fill="#14264e" />
+          <path d={wavePath(80, 20, 1440)} fill="#c3d8f2" />
         </svg>
         <svg className="wave wave--front" viewBox="0 0 2880 200" preserveAspectRatio="none">
-          <path d={wavePath(92, 14, 720)} fill="#142a59" />
+          <path d={wavePath(92, 14, 720)} fill="#b3cdee" />
         </svg>
       </div>
-
-      <Bubbles className="login__bubbles" />
 
       <section className="login__hero">
         <div className="brand">
