@@ -51,6 +51,7 @@ function dayPanel(o: Overview, date: string | null, close: () => void) {
       items={point?.orders ?? []}
       total={point?.count}
       empty="В этот день заказов не поступало."
+      href={point && point.count > 0 ? `/director/orders/${date}` : undefined}
       onClose={close}
     />
   );
@@ -77,6 +78,7 @@ export function OrdersHero({ overview: o }: { overview: Overview }) {
   const router = useRouter();
   const [range, setRange] = useState(7);
   const [selected, setSelected] = useState<string | null>(null);
+  const [help, setHelp] = useState(false);
 
   const byDate = new Map(o.days.map((d) => [d.date, d]));
   const today = byDate.get(o.today)!;
@@ -110,19 +112,22 @@ export function OrdersHero({ overview: o }: { overview: Overview }) {
 
   return (
     <section className="xhero" aria-label="Заказы по дням">
-      <ChartCard id="orders" title="Сколько заказов поступает" onDismiss={() => setSelected(null)}>
-        <div className="seg-control seg-control--small" role="group" aria-label="Период графика">
-          {RANGES.map((r) => (
-            <button key={r.days} type="button" className={`seg-control__btn${range === r.days ? " seg-control__btn--on" : ""}`} onClick={() => setRange(r.days)} aria-pressed={range === r.days}>
-              {r.label}
-            </button>
-          ))}
+      <ChartCard id="orders" title="Сколько заказов поступает?" onDismiss={() => setSelected(null)}>
+        <div className="chartbox">
+          <div className="seg-inline" role="group" aria-label="Период графика">
+            {RANGES.map((r) => (
+              <button key={r.days} type="button" className={`seg-inline__btn${range === r.days ? " seg-inline__btn--on" : ""}`} onClick={() => setRange(r.days)} aria-pressed={range === r.days}>
+                {r.label}
+              </button>
+            ))}
+          </div>
+          <OrdersChart days={o.days.slice(-range)} forecast={o.forecast} today={o.today} selected={selected} onSelect={setSelected} onOpen={(d) => router.push(`/director/orders/${d}`)} legendExtra={<button type="button" className="legend__help" onClick={() => setHelp((v) => !v)} aria-expanded={help} aria-label="Как проверен прогноз">?</button>} />
         </div>
-        <OrdersChart days={o.days.slice(-range)} forecast={o.forecast} today={o.today} selected={selected} onSelect={setSelected} />
-        <p className="xcard__note">
+        {help && (
+          <p className="xcard__note">
           Прогноз проверен на последних {o.accuracy.days} днях: в среднем ошибается на ±{o.accuracy.mae} заказа, в коридор попадало {o.accuracy.withinBandPct}% дней.
         </p>
-        {dayPanel(o, selected, () => setSelected(null))}
+        )}
       </ChartCard>
 
       <div className="xsum">

@@ -2,9 +2,8 @@ import Link from "next/link";
 import { getDb } from "@/db";
 import FreshnessBar from "@/components/director/FreshnessBar";
 import ColumnChart from "@/components/charts/ColumnChart";
-import Waterfall from "@/components/charts/explore/Waterfall";
-import { MonthPace, OrdersHero, WeekdayHeat } from "@/components/charts/explore/Panels";
 import { ChartCard } from "@/components/charts/explore/shared";
+import { OrdersHero } from "@/components/charts/explore/Panels";
 import { getOverview } from "@/lib/overview";
 import { Delta, DivergingBars, axisMoney } from "@/components/charts/charts";
 import { getDynamics } from "@/lib/analytics";
@@ -35,9 +34,6 @@ export default async function Changes({ searchParams }: { searchParams: Params }
     <>
       <header className="dhead">
         <h1>Что изменилось?</h1>
-        <p>
-          {formatDate(y.current.from)} — {formatDate(y.current.to)} в сравнении с {formatDate(y.previous.from)} — {formatDate(y.previous.to)}
-        </p>
       </header>
 
       <FreshnessBar refreshedAt={fresh.refreshedAt} everyMinutes={fresh.refreshEveryMinutes} />
@@ -53,16 +49,15 @@ export default async function Changes({ searchParams }: { searchParams: Params }
         </Link>
       )}
 
-      <div className="seg-control" role="tablist" aria-label="Период">
-        {PERIODS.map((x) => (
-          <Link scroll={false} key={x.weeks} href={`/director/changes?weeks=${x.weeks}`} className={`seg-control__btn${x.weeks === weeks ? " seg-control__btn--on" : ""}`} aria-current={x.weeks === weeks ? "true" : undefined}>
-            {x.label}
-          </Link>
-        ))}
-      </div>
-
       <section className="hero-card" aria-label="Изменение маржи">
-        <span className="hero-card__cap">Маржа по сравнению с предыдущим периодом</span>
+        <h2 className="xcard__title">Маржа по сравнению с предыдущим периодом</h2>
+        <div className="seg-inline seg-inline--left" role="tablist" aria-label="Период сравнения">
+          {PERIODS.map((x) => (
+            <Link scroll={false} key={x.weeks} href={`/director/changes?weeks=${x.weeks}`} className={`seg-inline__btn${x.weeks === weeks ? " seg-inline__btn--on" : ""}`} aria-current={x.weeks === weeks ? "true" : undefined}>
+              {x.label}
+            </Link>
+          ))}
+        </div>
         <div className="hero-card__big">
           <span className={dir < 0 ? "neg" : "pos"}>
             <Delta value={dir} />
@@ -71,18 +66,22 @@ export default async function Changes({ searchParams }: { searchParams: Params }
         </div>
         <div className="compare">
           <Link href={`/director/changes/details/current?weeks=${weeks}`} className="compare__col">
-            <span>Сейчас · {short(y.current.from)}–{short(y.current.to)}</span>
+            <span>{short(y.current.from)}–{short(y.current.to)}</span>
             <strong>{formatMoneyShort(y.currentTotals.margin)}</strong>
             <small>
-              {y.currentTotals.count} перевозок · маржа {formatPercent(y.currentTotals.marginPct)}
+              {y.currentTotals.count} перевозок
+              <br />
+              Маржа: {formatPercent(y.currentTotals.marginPct)}
             </small>
             <em className="more-link">Какие перевозки ›</em>
           </Link>
           <Link href={`/director/changes/details/previous?weeks=${weeks}`} className="compare__col compare__col--before">
-            <span>Раньше · {short(y.previous.from)}–{short(y.previous.to)}</span>
+            <span>{short(y.previous.from)}–{short(y.previous.to)}</span>
             <strong>{formatMoneyShort(y.previousTotals.margin)}</strong>
             <small>
-              {y.previousTotals.count} перевозок · маржа {formatPercent(y.previousTotals.marginPct)}
+              {y.previousTotals.count} перевозок
+              <br />
+              Маржа: {formatPercent(y.previousTotals.marginPct)}
             </small>
             <em className="more-link">Какие перевозки ›</em>
           </Link>
@@ -90,23 +89,16 @@ export default async function Changes({ searchParams }: { searchParams: Params }
         {fewBefore && <p className="note">В предыдущем периоде мало перевозок ({y.previousTotals.count}), поэтому сравнение может быть неточным.</p>}
       </section>
 
-      <ChartCard title="Как маржа дошла до сегодняшней" hint="Было → изменение из-за числа перевозок → изменение из-за маржи с одной перевозки → стало. Нажмите на столбец.">
-        <Waterfall
-          ariaLabel="Мост от прошлой маржи к текущей"
-          steps={[
-            { key: "prev", label: "Раньше", kind: "total", value: y.previousTotals.margin, href: `/director/changes/details/previous?weeks=${weeks}` },
-            { key: "vol", label: "Число перевозок", kind: "delta", value: y.effects.volume, href: `/director/changes/details/volume?weeks=${weeks}`, hint: `${y.previousTotals.count} → ${y.currentTotals.count} перевозок` },
-            { key: "rate", label: "Маржа с одной", kind: "delta", value: y.effects.rate, href: `/director/changes/details/rate?weeks=${weeks}`, hint: `${axisMoney(y.effects.averagePrevious)} → ${axisMoney(y.effects.averageCurrent)} ₽ на перевозку` },
-            { key: "cur", label: "Сейчас", kind: "total", value: y.currentTotals.margin, href: `/director/changes/details/current?weeks=${weeks}` },
-          ]}
-        />
-      </ChartCard>
-
-      <section aria-label="Маржа по неделям">
-        <div className="section-head">
-          <h2>Маржа по неделям</h2>
-        </div>
-        <ColumnChart
+      <ChartCard title="Маржа по неделям">
+        <div className="chartbox">
+          <div className="seg-inline" role="tablist" aria-label="Период">
+            {PERIODS.map((x) => (
+              <Link scroll={false} key={x.weeks} href={`/director/changes?weeks=${x.weeks}`} className={`seg-inline__btn${x.weeks === weeks ? " seg-inline__btn--on" : ""}`} aria-current={x.weeks === weeks ? "true" : undefined}>
+                {x.label}
+              </Link>
+            ))}
+          </div>
+          <ColumnChart
           ariaLabel="Маржа по неделям: выбранный период и предыдущий"
           columns={y.weeklySeries.map((w) => ({
             label: short(w.start),
@@ -117,13 +109,13 @@ export default async function Changes({ searchParams }: { searchParams: Params }
               lines: [`Маржа ${formatMoney(w.margin)}`, `Доставлено перевозок: ${w.count}`, w.period === "current" ? "Выбранный период" : "Предыдущий период"],
             },
           }))}
-        />
-        <p className="hint">Неделя считается по дате доставки груза. Наведите на столбик (на телефоне нажмите на него), чтобы увидеть сумму и число перевозок.</p>
-      </section>
+          />
+        </div>
+      </ChartCard>
 
       <section aria-label="Почему изменилось">
         <div className="section-head">
-          <h2>Почему так вышло</h2>
+          <h2>Почему так вышло?</h2>
         </div>
         <div className="why">
           <Link href={`/director/changes/details/volume?weeks=${weeks}`} className="why__card why__card--link">
@@ -143,29 +135,21 @@ export default async function Changes({ searchParams }: { searchParams: Params }
             <em className="more-link">Подробнее: какие перевозки ›</em>
           </Link>
         </div>
-        <p className="hint">Вместе эти две причины дают полное изменение маржи ({formatMoney(dir)}). Нажмите на причину, чтобы увидеть, из чего она сложилась.</p>
+        <p className="hint">Вместе эти две причины дают полное изменение маржи ({formatMoney(dir)}).</p>
       </section>
 
       <section aria-label="Какие перевозки повлияли">
         <div className="section-head">
-          <h2>Какие перевозки повлияли</h2>
+          <h2>Какие перевозки повлияли?</h2>
         </div>
         <Contributors title="Потянули вниз" empty="Нет перевозок с маржой ниже обычной." rows={y.dragging} />
         <Contributors title="Помогли" empty="Нет перевозок с маржой выше обычной." rows={y.boosting} />
         <p className="hint">Влияние перевозки = её маржа минус средняя маржа перевозки в предыдущем периоде.</p>
       </section>
 
-      <section aria-label="Поток заказов">
-        <div className="section-head">
-          <h2>Поток заказов</h2>
-        </div>
-        <MonthPace overview={overview} />
-        <WeekdayHeat overview={overview} />
-      </section>
-
       <section aria-label="Изменение по клиентам">
         <div className="section-head">
-          <h2>По клиентам</h2>
+          <h2>Изменение маржи по клиентам</h2>
         </div>
         {y.byClient.length === 0 ? (
           <div className="empty">
@@ -203,13 +187,18 @@ function Contributors({ title, rows, empty }: { title: string; empty: string; ro
                   <strong>{r.number}</strong> {r.client ?? "Клиент не указан"}
                   <small>
                     {r.direction ?? "—"}
-                    {r.reasons.length > 0 && ` · ${r.reasons[0]}`}
+                    {r.reasons.length > 0 && (
+                      <>
+                        {" · "}
+                        <span className={r.reasons[0].startsWith("Просрочена оплата") ? "neg contrib__reason" : undefined}>{r.reasons[0]}</span>
+                      </>
+                    )}
                   </small>
                   {r.revisedAt && <small className="contrib__revised">Пересчитано задним числом ({formatDate(r.revisedAt)})</small>}
                 </span>
                 <span className="contrib__nums">
                   <Delta value={r.effect} />
-                  <small>маржа {formatMoney(r.margin)}</small>
+                  <small>Маржа: {formatMoney(r.margin)}</small>
                 </span>
               </Link>
             </li>

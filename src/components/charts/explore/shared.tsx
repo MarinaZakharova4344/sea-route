@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import type { OrderRef } from "@/lib/overview";
 
@@ -31,10 +32,17 @@ export function niceMax(v: number): number {
 }
 
 /** Всплывающая подсказка над графиком; координаты в процентах от области графика. */
-export function Tip({ x, y, title, lines }: { x: number; y: number; title: string; lines: string[] }) {
+export function Tip({ x, y, title, lines, onClick }: { x: number; y: number; title: string; lines: string[]; onClick?: () => void }) {
   const align = x < 22 ? "left" : x > 78 ? "right" : "center";
   return (
-    <div className={`tip tip--${align}`} style={{ left: `${x}%`, top: `${y}%` }} role="tooltip">
+    <div
+      className={`tip tip--${align}${onClick ? " tip--link" : ""}`}
+      style={{ left: `${x}%`, top: `${y}%` }}
+      role={onClick ? "link" : "tooltip"}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={onClick ? (e) => e.key === "Enter" && onClick() : undefined}
+    >
       <strong>{title}</strong>
       {lines.map((l) => (
         <span key={l}>{l}</span>
@@ -54,7 +62,7 @@ export function ChartCard({ title, hint, children, id, onDismiss }: { title: str
       const t = e.target as Element;
       // кнопка могла исчезнуть при перерисовке (например, «Подробнее» заменяется списком): это не нажатие мимо
       if (!t.isConnected) return;
-      if (t.closest && t.closest('[role="button"], .heat button, .blist__row, .drill, .seg-control, .xbar, .xweek')) return;
+      if (t.closest && t.closest('[role="button"], .heat button, .blist__row, .drill, .seg-control, .seg-inline, .legend__help, .tip, .xbar, .xweek')) return;
       onDismiss();
     };
     document.addEventListener("click", handler);
@@ -97,6 +105,7 @@ function DrillInner({
   href,
   onClose,
 }: DrillProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const topBefore = useRef<number | null>(null);
@@ -116,7 +125,14 @@ function DrillInner({
   }, [open]);
 
   return (
-    <div className="drill" role="region" aria-label={title} ref={box}>
+    <div
+      className={`drill${href ? " drill--link" : ""}`}
+      role="region"
+      aria-label={title}
+      ref={box}
+      // панель со ссылкой целиком кликабельна: нажатие открывает подробности отдельным экраном (кроме кнопки «Закрыть»)
+      onClick={href ? (e) => !(e.target as Element).closest(".drill__close, a") && router.push(href) : undefined}
+    >
       <div className="drill__head">
         <strong>{title}</strong>
         <button type="button" className="drill__close" onClick={onClose} aria-label="Закрыть подробности">

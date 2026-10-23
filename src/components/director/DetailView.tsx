@@ -61,7 +61,7 @@ export default function DetailView({
       <FreshnessBar refreshedAt={freshness.refreshedAt} everyMinutes={freshness.refreshEveryMinutes} />
 
       <section className="hero-card" aria-label="Что это">
-        <h2 className="h-small h-small--first">Что это значит</h2>
+        <h2 className="h-small h-small--first">Что это значит?</h2>
         <p className="lead">{page.lead}</p>
         {page.summary.length > 0 && (
           <dl className="facts">

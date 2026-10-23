@@ -61,7 +61,6 @@ export default async function Today({ searchParams }: { searchParams: Params }) 
             </li>
           ))}
         </ul>
-        <p className="hint">Нажмите на причину, чтобы увидеть, какие перевозки и счета за ней стоят.</p>
       </section>
 
       <StatusDonut overview={overview} />

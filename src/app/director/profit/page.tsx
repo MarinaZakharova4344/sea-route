@@ -86,7 +86,7 @@ export default async function Profit({ searchParams }: { searchParams: Params })
           </Link>
         </dl>
 
-        <h2 className="h-small">Насколько цифра окончательная</h2>
+        <h2 className="h-small">Насколько цифра окончательная?</h2>
         <SegmentedBar
           segments={[
             { label: "Окончательная", value: Math.max(p.totals.finalMargin, 0), color: VIZ.strong, href: `/director/profit/details/final?days=${days}` },
@@ -119,7 +119,7 @@ export default async function Profit({ searchParams }: { searchParams: Params })
       </section>
 
       {p.totals.count > 0 && (
-        <ChartCard title="Из чего сложилась маржа" hint="Оборот минус расходы. Нажмите на столбец: откроются перевозки и суммы по строкам.">
+        <ChartCard title="Из чего сложилась маржа?" hint="Оборот минус расходы. Нажмите на столбец: откроются перевозки и суммы по строкам.">
           <Waterfall
             ariaLabel="Оборот, расходы и маржа за период"
             steps={[
@@ -133,7 +133,7 @@ export default async function Profit({ searchParams }: { searchParams: Params })
 
       {p.groups.length > 1 && (
         <ChartCard
-          title={by === "client" ? "Кто приносит деньги, а кто только оборот" : "Какие направления приносят деньги"}
+          title={by === "client" ? "Кто приносит деньги, а кто только оборот?" : "Какие направления приносят деньги?"}
           hint="Вправо — оборот, вверх — маржа в процентах. Красные точки внизу справа: много оборота, мало денег. Нажмите на точку, чтобы открыть."
         >
           <ClientScatter
@@ -198,13 +198,13 @@ export default async function Profit({ searchParams }: { searchParams: Params })
                   <RevenueMarginBars revenue={g.revenue} margin={g.margin} max={maxRevenue} />
                   <div className="group__nums">
                     <span>
-                      Оборот <strong>{formatMoneyShort(g.revenue)}</strong>
+                      Оборот: <strong>{formatMoneyShort(g.revenue)}</strong>
                     </span>
                     <span>
-                      Маржа <strong className={g.margin < 0 ? "neg" : ""}>{formatMoneyShort(g.margin)}</strong>
+                      Маржа: <strong className={g.margin < 0 ? "neg" : ""}>{formatMoneyShort(g.margin)}</strong>
                     </span>
                     <span>
-                      Проблемных <strong>{formatPercent(g.problemShare)}</strong>
+                      Проблемных: <strong>{formatPercent(g.problemShare)}</strong>
                     </span>
                   </div>
                   {g.verdict && (

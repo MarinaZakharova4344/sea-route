@@ -97,7 +97,7 @@ export default function ColumnChart({ columns, ariaLabel }: { columns: Column[];
               >
                 {/* область наведения шире столбика и на всю высоту */}
                 <rect x={pad.l + slot * i} y={pad.t} width={slot} height={innerH} fill={on ? "rgba(11,26,74,0.06)" : "transparent"} />
-                {h > 0 && <path d={rounded(x, top, bw, h, 4, c.value >= 0)} fill={c.tone === "current" ? VIZ.accent : VIZ.muted} opacity={active === null || on ? 1 : 0.55} />}
+                {h > 0 && <path d={rounded(x, top, bw, h, 4, c.value >= 0)} fill={c.tone === "current" ? VIZ.accent : "#c3c9d6"} opacity={1} />}
                 {i % every === 0 && (
                   <text x={x + bw / 2} y={H - 8} textAnchor="middle" fontSize="10.5" fill={on ? "#0b1a4a" : VIZ.ink2}>
                     {c.label}
@@ -123,7 +123,7 @@ export default function ColumnChart({ columns, ariaLabel }: { columns: Column[];
           Выбранный период
         </span>
         <span>
-          <span className="legend__dot" style={{ background: VIZ.muted }} />
+          <span className="legend__dot" style={{ background: "#c3c9d6" }} />
           Предыдущий период
         </span>
       </figcaption>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { DayPoint, ForecastPoint } from "@/lib/overview";
 import { VIZ } from "../charts";
 import { Tip, dayLong, ordersWord } from "./shared";
@@ -15,12 +15,18 @@ export default function OrdersChart({
   today,
   selected,
   onSelect,
+  legendExtra,
+  onOpen,
 }: {
   days: DayPoint[];
   forecast: ForecastPoint[];
   today: string;
   selected: string | null;
   onSelect: (date: string) => void;
+  /** что добавить справа в строку условных обозначений (например, кнопку «?») */
+  legendExtra?: ReactNode;
+  /** нажатие на подсказку выбранного дня: открыть день отдельным экраном */
+  onOpen?: (date: string) => void;
 }) {
   const [hover, setHover] = useState<string | null>(null);
   const W = 300;
@@ -90,7 +96,7 @@ export default function OrdersChart({
               >
                 <rect x={pad.l + slot * i} y={pad.t} width={slot} height={innerH} fill={on ? "rgba(11,26,74,0.07)" : weekend ? "rgba(11,26,74,0.035)" : "transparent"} />
                 {/* фактические заказы */}
-                {!isFuture(c) && (c.actual ?? 0) > 0 && <rect x={x} y={y(c.actual!)} width={bw} height={y(0) - y(c.actual!)} rx={2} fill={isToday ? "#7fa8e6" : "#1f5fbf"} />}
+                {!isFuture(c) && (c.actual ?? 0) > 0 && <rect x={x} y={y(c.actual!)} width={bw} height={y(0) - y(c.actual!)} rx={2} fill={isToday ? "#6a84b6" : "#061a44"} />}
                 {/* ожидаемый итог сегодняшнего дня и прогноз на будущее */}
                 {c.fc && (
                   <>
@@ -115,24 +121,26 @@ export default function OrdersChart({
           <Tip
             x={(cx(idx) / W) * 100}
             y={(y(Math.max(act.actual ?? 0, act.fc?.high ?? 0)) / H) * 100}
+            onClick={onOpen ? () => onOpen(act.date) : undefined}
             title={`${dayLong(act.date, act.weekday)}${act.date === today ? " (сегодня)" : ""}`}
             lines={
               isFuture(act)
-                ? [`Прогноз: около ${Math.round(act.fc!.expected)} ${ordersWord(Math.round(act.fc!.expected))}`, `Вероятный коридор: ${Math.round(act.fc!.low)}–${Math.round(act.fc!.high)}`]
-                : [`Поступило: ${act.actual} ${ordersWord(act.actual ?? 0)}`, ...(act.fc ? [`Ожидается за день: около ${Math.round(act.fc.expected)}`] : [])]
+                ? [`Прогноз: около ${Math.round(act.fc!.expected)} ${ordersWord(Math.round(act.fc!.expected))}`, `Вероятный коридор: ${Math.round(act.fc!.low)}–${Math.round(act.fc!.high)}`, ...(onOpen ? ["Подробнее ›"] : [])]
+                : [`Поступило: ${act.actual} ${ordersWord(act.actual ?? 0)}`, ...(act.fc ? [`Ожидается за день: около ${Math.round(act.fc.expected)}`] : []), ...(onOpen ? ["Подробнее ›"] : [])]
             }
           />
         )}
       </div>
       <figcaption className="legend legend--inline">
         <span>
-          <span className="legend__dot" style={{ background: "#1f5fbf" }} />
+          <span className="legend__dot" style={{ background: "#061a44" }} />
           Поступило
         </span>
         <span>
           <span className="legend__dot legend__dot--hatch" />
           Прогноз и коридор
         </span>
+        {legendExtra}
       </figcaption>
     </figure>
   );

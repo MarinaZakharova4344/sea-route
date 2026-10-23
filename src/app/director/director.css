@@ -434,8 +434,8 @@
 }
 
 .app .seg-control__btn--on {
-  color: #fff;
-  background: #1f5fbf;
+  color: #0b1a4a;
+  background: #dfe3ea;
 }
 
 /* ---------- Графики ---------- */
@@ -1527,7 +1527,7 @@ a.compare__col:hover {
   padding: 6px 12px;
   border: 0;
   border-radius: 8px;
-  background: #e3edf9;
+  background: #ffffff;
   font-size: 13px;
   font-weight: 600;
   color: #0b1a4a !important;
@@ -1832,8 +1832,8 @@ a.compare__col:hover {
 }
 
 .seg-control button.seg-control__btn--on {
-  background: #1f5fbf;
-  color: #fff;
+  background: #dfe3ea;
+  color: #0b1a4a;
 }
 
 .xhero .chart__svg {
@@ -1906,7 +1906,7 @@ a.compare__col:hover {
 }
 
 .xbar__fill--past {
-  background: #1f5fbf;
+  background: #061a44;
 }
 
 .xbar__fill--fc {
@@ -2092,4 +2092,134 @@ a.compare__col:hover {
   width: 100%;
   min-width: 0;
   flex: none;
+}
+
+/* переключатель 7 / 14 / 30 дней и график лежат прямо в блоке, без вложенных рамок */
+.app .chartbox {
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+.app .chartbox .chart {
+  padding: 0 0 8px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+.seg-inline {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 0 4px;
+}
+
+.app .seg-inline__btn {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #5b6b8c;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.app .seg-inline__btn:hover {
+  color: #0b1a4a;
+}
+
+.app .seg-inline__btn--on {
+  background: #dfe3ea;
+  color: #0b1a4a;
+}
+
+/* кнопка «?» справа в строке условных обозначений: открывает пояснение о точности прогноза */
+.app .legend__help {
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid #9fb9de;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #5b6b8c;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.app .legend__help:hover,
+.app .legend__help[aria-expanded="true"] {
+  background: #dfe3ea;
+  color: #0b1a4a;
+}
+
+/* панель дня целиком кликабельна: ведёт на отдельный экран со списком заказов */
+.app .drill--link {
+  cursor: pointer;
+}
+
+.app .drill--link:hover {
+  background: #f3f7fc;
+}
+
+/* подсказка выбранного дня кликабельна: нажатие открывает день отдельным экраном */
+.app .tip--link {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.app .tip--link span:last-child {
+  margin-top: 2px;
+  font-weight: 700;
+  color: #1f5fbf;
+}
+
+/* кнопки-ссылки «Подробнее», «Обновить» и им подобные: тёмно-оранжевые */
+.app .tile__more,
+.app .more-link,
+.app .drill__more-btn,
+.app .drill a.drill__more-btn,
+.app .fresh__btn,
+.app .tip--link span:last-child {
+  color: #a34a06;
+}
+
+.app .tile--link:hover .tile__more,
+a:hover .more-link,
+a:hover .app .more-link,
+.app .drill__more-btn:hover,
+.app .drill a.drill__more-btn:hover,
+.app .fresh__btn:hover:not(:disabled) {
+  color: #7a3604;
+}
+
+/* период сравнения (2 / 4 / 8 недель) внутри блока маржи, под его заголовком */
+.seg-inline--left {
+  justify-content: center;
+  padding: 8px 0 6px;
+}
+
+.app a.seg-inline__btn {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* названия блоков одного вида: заголовок блока маржи как у остальных */
+.app .hero-card .xcard__title {
+  margin: 0 0 8px;
+}
+
+/* строки «Маржа: …» в списках перевозок: одинаково, в одну строку, без переноса */
+.app .contrib__nums small {
+  white-space: nowrap;
+}
+
+.app .contrib__reason {
+  font-weight: 600;
 }
