@@ -1,0 +1,17 @@
+{
+  "name": "Морской маршрут",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": { "label": "Морской маршрут", "onAutoForward": "openBrowser" }
+  },
+  "containerEnv": {
+    "PORT": "3000",
+    "DEMO_RESEED": "always",
+    "DEMO_SET": "large",
+    "APP_TIMEZONE": "Europe/Moscow"
+  },
+  "postCreateCommand": "npm ci --include=dev && npm run build",
+  "postStartCommand": "nohup npm run start:render > /tmp/sea-route.log 2>&1 &",
+  "postAttachCommand": "gh codespace ports visibility 3000:public -c \"$CODESPACE_NAME\" || true"
+}
