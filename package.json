@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "start:render": "tsx src/db/ensure-demo.ts && next start",
+    "start:demo": "tsx src/db/ensure-demo.ts && next start",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
     "db:seed:large": "tsx src/db/seed-large.ts",

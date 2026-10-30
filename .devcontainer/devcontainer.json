@@ -12,6 +12,6 @@
     "APP_TIMEZONE": "Europe/Moscow"
   },
   "postCreateCommand": "npm ci --include=dev && npm run build",
-  "postStartCommand": "nohup npm run start:render > /tmp/sea-route.log 2>&1 &",
+  "postStartCommand": "nohup npm run start:demo > /tmp/sea-route.log 2>&1 &",
   "postAttachCommand": "gh codespace ports visibility 3000:public -c \"$CODESPACE_NAME\" || true"
 }
