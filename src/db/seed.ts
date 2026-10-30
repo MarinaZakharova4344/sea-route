@@ -14,7 +14,7 @@ import { applySchema, openDb } from "./";
 import { recalcAll } from "../lib/calc/recalc";
 import { todayIso } from "../lib/dates";
 
-export const DEMO_PASSWORD = "demo12345";
+export const DEMO_PASSWORD = process.env.DEMO_PASSWORD?.trim() || "demo12345";
 
 export const DEMO_USERS = [
   { email: "ivan@searoute.test", name: "Иван Петров", role: "manager" },

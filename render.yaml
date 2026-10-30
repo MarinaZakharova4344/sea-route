@@ -1,0 +1,24 @@
+# Размещение на Render: https://render.com → New → Blueprint → выбрать этот репозиторий.
+# Бесплатный тариф не хранит файлы между перезапусками, поэтому при каждом запуске
+# загружаются свежие демонстрационные данные (см. src/db/ensure-demo.ts).
+services:
+  - type: web
+    name: sea-route
+    runtime: node
+    plan: free
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm run start:render
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: APP_TIMEZONE
+        value: Europe/Moscow
+      - key: DEMO_RESEED
+        value: always
+      - key: DEMO_SET
+        value: large
+      - key: DEMO_PASSWORD
+        sync: false
